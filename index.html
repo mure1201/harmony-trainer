@@ -35,11 +35,18 @@
     .voice-btn{min-width:54px}
     .voice-btn[data-v="B"]{opacity:.55}
     .toolbar-key{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}.toolbar-select{border:1px solid var(--line);border-radius:9px;padding:8px 9px;background:#fff;color:var(--ink)}.accidental-label{margin-left:8px}
-    #scoreScroller{overflow-x:scroll;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;overscroll-behavior-x:contain;padding-bottom:4px}
-    #scoreScroller::-webkit-scrollbar{height:14px}
-    #scoreScroller::-webkit-scrollbar-thumb{background:#b8afa3;border:3px solid #fffdf8;border-radius:999px}
+    #scoreScroller{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;overscroll-behavior-x:contain;padding-bottom:2px;touch-action:pan-x}
+    #scoreScroller::-webkit-scrollbar{height:12px}
+    #scoreScroller::-webkit-scrollbar-thumb{background:#aaa095;border:2px solid #fffdf8;border-radius:999px}
     #scoreScroller::-webkit-scrollbar-track{background:#eee7dc;border-radius:999px}
-    #score{display:block;min-width:1600px;width:1600px;height:470px;background:#fffdf9;touch-action:none}
+    #score{display:block;min-width:1600px;width:1600px;height:470px;background:#fffdf9;touch-action:pan-x}
+    .score-scroll-control{display:flex;align-items:center;gap:8px;padding:8px 12px 10px;border-top:1px solid #eee5da;background:#fbf8f2;position:relative;z-index:2}
+    .score-scroll-control button{padding:5px 9px;min-width:38px;border-radius:8px}
+    #scoreScrollBar{flex:1;min-width:120px;height:30px;accent-color:var(--accent);touch-action:pan-x}
+    .tempo-control{display:flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--line);background:#fff;border-radius:11px;color:var(--muted);font-size:12px;white-space:nowrap}
+    .tempo-control button{padding:4px 8px;min-width:32px;border-radius:8px}
+    #tempoRange{width:118px;accent-color:var(--accent)}
+    #tempoValue{min-width:54px;text-align:center;font-variant-numeric:tabular-nums;color:var(--ink);font-weight:650}
     .help{padding:10px 14px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
     .analysis-strip{display:grid;grid-template-columns:repeat(8,minmax(82px,1fr));gap:6px;padding:10px 12px;border-top:1px solid var(--line);overflow-x:auto}
     .analysis-cell{min-width:82px;text-align:center;background:#f8f4ed;border:1px solid #e5ddd0;border-radius:10px;padding:7px 4px}
@@ -66,7 +73,7 @@
     @media(max-width:680px){
       .app{padding:10px}.title p{display:none}.statusbar{gap:4px}.pill{padding:5px 8px}
       .toolbar{border-radius:12px}.toolbar button{padding:8px 9px;font-size:12px}
-      #score{height:430px}.settings-grid{grid-template-columns:1fr}
+      #score{height:430px}.settings-grid{grid-template-columns:1fr}.tempo-control{width:100%;order:10}.tempo-control #tempoRange{flex:1;width:auto}
     }
   </style>
 </head>
@@ -100,6 +107,13 @@
     <button id="newTask">新しい課題</button>
     <button id="playBtn">▶ 再生</button>
     <button id="stopBtn">■ 停止</button>
+    <div class="tempo-control" aria-label="再生速度">
+      <span>再生速度</span>
+      <button id="tempoDown" type="button" title="遅く">−</button>
+      <input id="tempoRange" type="range" min="40" max="160" step="5" value="90" aria-label="再生速度（BPM）">
+      <button id="tempoUp" type="button" title="速く">＋</button>
+      <span id="tempoValue">90 BPM</span>
+    </div>
     <button id="undoBtn">↶ 元に戻す</button>
     <button id="redoBtn">↷ やり直し</button>
     <span class="spacer"></span>
@@ -126,7 +140,12 @@
     </div>
 
     <div id="scoreScroller">
-      <svg id="score" viewBox="0 0 1360 430" aria-label="SATB四声体大譜表"></svg>
+      <svg id="score" viewBox="0 0 1600 470" aria-label="SATB四声体大譜表"></svg>
+    </div>
+    <div class="score-scroll-control" aria-label="五線譜の横スクロール">
+      <button id="scrollLeftBtn" type="button" aria-label="左へスクロール">◀</button>
+      <input id="scoreScrollBar" type="range" min="0" max="1000" value="0" aria-label="五線譜の横スクロールバー">
+      <button id="scrollRightBtn" type="button" aria-label="右へスクロール">▶</button>
     </div>
 
     <div class="analysis-strip" id="analysisStrip"></div>
@@ -151,7 +170,7 @@
 
 <dialog id="rulesDialog">
   <div class="modal">
-    <h2>禁則解説（第1.7版）</h2>
+    <h2>禁則解説（第1.9版）</h2>
     <ul>
       <li><b>連続5度・連続8度</b>：二声が同方向に進み、完全5度または完全8度が続く進行を要修正とします。</li>
       <li><b>並達5度・並達8度</b>：外声が同方向に完全5度・8度へ進み、ソプラノが跳躍する場合を注意とします。</li>
@@ -188,7 +207,7 @@
     <h2>設定</h2>
     <div class="settings-grid">
       <label>再生テンポ
-        <select id="tempoSel"><option value="900">ゆっくり</option><option value="650" selected>標準</option><option value="450">速め</option></select>
+        <select id="tempoSel"><option value="60">ゆっくり（60 BPM）</option><option value="90" selected>標準（90 BPM）</option><option value="120">速め（120 BPM）</option></select>
       </label>
       <label>和音解析
         <select id="analysisSel"><option value="on" selected>表示</option><option value="off">非表示</option></select>
@@ -280,7 +299,7 @@
   let history = [], future = [];
   let errorKeys = new Set();
   let audioCtx = null, liveNodes = [];
-  let settings = {tempo:650, analysis:true, functionMode:"on"};
+  let settings = {tempoBpm:90, analysis:true, functionMode:"on"};
 
   const ranges = {S:[60,82], A:[54,77], T:[47,70], B:[35,61]};
   const trebleTopY = 104, bassTopY = 306, lineGap = 12;
@@ -395,8 +414,8 @@
   }
   function drawStaff(topY,clef){
     for(let i=0;i<5;i++) score.appendChild(svgEl("line",{x1:staffLeft,y1:topY+i*lineGap,x2:staffRight,y2:topY+i*lineGap,stroke:"#35322f","stroke-width":"1.15"}));
-    const clefY=clef==="treble"?topY+49:topY+42;
-    drawText(clef==="treble"?"𝄞":"𝄢",98,clefY,{"font-size":clef==="treble"?66:56,"font-family":"'Noto Music','Segoe UI Symbol',serif",fill:"#24211e"});
+    const clefY=clef==="treble"?topY+61:topY+52;
+    drawText(clef==="treble"?"𝄞":"𝄢",100,clefY,{"font-size":clef==="treble"?92:76,"font-family":"'Noto Music','Segoe UI Symbol',serif",fill:"#24211e"});
     drawKeySignature(topY,clef);
     const tx=286;
     drawText("4",tx,topY+20,{"font-size":"24","font-family":"Georgia,serif","font-weight":"700","text-anchor":"middle",fill:"#24211e"});
@@ -442,8 +461,9 @@
       drawText(accidentalGlyph(p.acc),x-24,y+8,{"font-size":"22","font-family":"'Noto Music','Segoe UI Symbol',serif","text-anchor":"middle",fill:stroke});
     }
     const g=svgEl("g",{"data-v":v,"data-slot":i,style:v==="B"?"cursor:default":"cursor:pointer"});
-    g.appendChild(svgEl("ellipse",{cx:x,cy:y,rx:9.2,ry:5.7,fill:stroke,stroke:"none",transform:`rotate(-11 ${x} ${y})`}));
-    g.appendChild(svgEl("ellipse",{cx:x-0.6,cy:y-0.4,rx:5.2,ry:2.7,fill:"#fffdf9",stroke:"none",transform:`rotate(-11 ${x-0.6} ${y-0.4})`}));
+    g.appendChild(svgEl("ellipse",{cx:x,cy:y,rx:8.6,ry:5.1,fill:stroke,stroke:"none",transform:`rotate(-8 ${x} ${y})`}));
+    // 全音符の内側は、対位法ツールに合わせて左肩上がりの白い楕円。
+    g.appendChild(svgEl("ellipse",{cx:x-0.2,cy:y-0.2,rx:4.8,ry:2.0,fill:"#fffdf9",stroke:"none",transform:`rotate(28 ${x-0.2} ${y-0.2})`}));
     g.appendChild(svgEl("rect",{x:x-28,y:y-17,width:52,height:34,fill:"transparent"}));
     score.appendChild(g);
   }
@@ -749,14 +769,64 @@
   }
   document.getElementById("gradeBtn").onclick=grade;
 
-  async function play(){stop();if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();await audioCtx.resume();const stepMs=settings.tempo;for(let i=0;i<8;i++)setTimeout(()=>playChord(i,Math.max(stepMs*1.15,900)),i*stepMs)}
-  function playChord(i,durationMs){if(!audioCtx)return;const now=audioCtx.currentTime;for(const v of voices){const p=notes[v][i];if(!p)continue;const m=midiOf(p),osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type="sine";osc.frequency.value=440*Math.pow(2,(m-69)/12);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(v==="B"?.045:.03,now+.03);gain.gain.setValueAtTime(v==="B"?.045:.03,now+Math.max(.04,durationMs/1000-.16));gain.gain.exponentialRampToValueAtTime(.0001,now+durationMs/1000);osc.connect(gain).connect(audioCtx.destination);osc.start(now);osc.stop(now+durationMs/1000+.08);liveNodes.push(osc)}}
+  async function play(){
+    stop();
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    await audioCtx.resume();
+    const stepMs=60000/settings.tempoBpm;
+    const holdMs=stepMs*0.94;
+    for(let i=0;i<8;i++)setTimeout(()=>playChord(i,holdMs),i*stepMs);
+  }
+  function playChord(i,durationMs){
+    if(!audioCtx)return;
+    const now=audioCtx.currentTime;
+    for(const v of voices){
+      const p=notes[v][i];if(!p)continue;
+      const m=midiOf(p),osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+      osc.type="sine";osc.frequency.value=440*Math.pow(2,(m-69)/12);
+      const level=v==="B"?.045:.03, dur=durationMs/1000;
+      gain.gain.setValueAtTime(.0001,now);
+      gain.gain.exponentialRampToValueAtTime(level,now+.035);
+      gain.gain.setValueAtTime(level,now+Math.max(.05,dur-.10));
+      gain.gain.exponentialRampToValueAtTime(.0001,now+dur);
+      osc.connect(gain).connect(audioCtx.destination);osc.start(now);osc.stop(now+dur+.04);liveNodes.push(osc);
+    }
+  }
   function stop(){liveNodes.forEach(n=>{try{n.stop()}catch(e){}});liveNodes=[]}
   document.getElementById("playBtn").onclick=play;document.getElementById("stopBtn").onclick=stop;
 
   const rulesDialog=document.getElementById("rulesDialog"),settingsDialog=document.getElementById("settingsDialog");window.rulesDialog=rulesDialog;window.settingsDialog=settingsDialog;
   document.getElementById("rulesBtn").onclick=()=>rulesDialog.showModal();document.getElementById("settingsBtn").onclick=()=>settingsDialog.showModal();
-  document.getElementById("tempoSel").onchange=e=>settings.tempo=+e.target.value;document.getElementById("analysisSel").onchange=e=>{settings.analysis=e.target.value==="on";renderAnalysis()};document.getElementById("functionSel").onchange=e=>{settings.functionMode=e.target.value;renderAnalysis()};
+  const tempoRange=document.getElementById("tempoRange"),tempoValue=document.getElementById("tempoValue"),tempoSel=document.getElementById("tempoSel");
+  function setTempo(bpm){
+    bpm=Math.max(40,Math.min(160,Math.round(bpm/5)*5));settings.tempoBpm=bpm;
+    tempoRange.value=bpm;tempoValue.textContent=`${bpm} BPM`;
+    if(bpm<=70)tempoSel.value="60";else if(bpm>=105)tempoSel.value="120";else tempoSel.value="90";
+  }
+  tempoRange.oninput=e=>setTempo(+e.target.value);
+  document.getElementById("tempoDown").onclick=()=>setTempo(settings.tempoBpm-5);
+  document.getElementById("tempoUp").onclick=()=>setTempo(settings.tempoBpm+5);
+  tempoSel.onchange=e=>setTempo(+e.target.value);
+  setTempo(90);
+
+  const scoreScroller=document.getElementById("scoreScroller"),scoreScrollBar=document.getElementById("scoreScrollBar");
+  let syncingScroll=false;
+  function syncBottomScroll(){
+    if(syncingScroll)return;
+    const max=Math.max(0,scoreScroller.scrollWidth-scoreScroller.clientWidth);
+    scoreScrollBar.value=max?Math.round(scoreScroller.scrollLeft/max*1000):0;
+  }
+  scoreScroller.addEventListener("scroll",syncBottomScroll,{passive:true});
+  scoreScrollBar.addEventListener("input",()=>{
+    const max=Math.max(0,scoreScroller.scrollWidth-scoreScroller.clientWidth);
+    syncingScroll=true;scoreScroller.scrollLeft=max*(+scoreScrollBar.value/1000);syncingScroll=false;
+  });
+  document.getElementById("scrollLeftBtn").onclick=()=>scoreScroller.scrollBy({left:-Math.max(220,scoreScroller.clientWidth*.65),behavior:"smooth"});
+  document.getElementById("scrollRightBtn").onclick=()=>scoreScroller.scrollBy({left:Math.max(220,scoreScroller.clientWidth*.65),behavior:"smooth"});
+  window.addEventListener("resize",syncBottomScroll);
+  setTimeout(syncBottomScroll,0);
+
+  document.getElementById("analysisSel").onchange=e=>{settings.analysis=e.target.value==="on";renderAnalysis()};document.getElementById("functionSel").onchange=e=>{settings.functionMode=e.target.value;renderAnalysis()};
   if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
   resetTask(true);
 })();
