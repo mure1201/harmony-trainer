@@ -1,0 +1,19 @@
+{
+  "name": "和声法トレーナー",
+  "short_name": "和声トレーナー",
+  "description": "四声体の和声課題を入力・再生・添削できる学習ツール",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4efe7",
+  "theme_color": "#f4efe7",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "./app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
