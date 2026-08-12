@@ -67,6 +67,7 @@
       #pageScrollThumb{left:2px;width:6px}
     }
 
+    .playback-highlight{fill:rgba(79,107,97,.10);stroke:rgba(79,107,97,.42);stroke-width:1.3}
     .analysis-strip{display:grid;grid-template-columns:repeat(8,minmax(82px,1fr));gap:6px;padding:10px 12px;border-top:1px solid var(--line);overflow-x:auto}
     .analysis-cell{min-width:82px;text-align:center;background:#f8f4ed;border:1px solid #e5ddd0;border-radius:10px;padding:7px 4px}
     .analysis-cell .roman{font-weight:700}.analysis-cell .func{font-size:11px;font-weight:700;margin-top:2px}.analysis-cell .func.T{color:#3f775e}.analysis-cell .func.S{color:#8b6c2e}.analysis-cell .func.D{color:#8d4f49}.analysis-cell .notes{font-size:10px;color:var(--muted);margin-top:3px;white-space:nowrap}
@@ -105,9 +106,9 @@
       <p>四声体・バス課題 / 長短調・機能和声判定対応版</p>
     </div>
     <div class="statusbar">
-      <span class="pill" id="taskNo">課題 1 / 6</span>
+      <span class="pill" id="taskNo">Step 1・問題 1 / 4</span>
       <span class="pill" id="keyPill">C dur</span>
-      <span class="pill">初級</span>
+      <span class="pill" id="levelPill">Step 1</span>
     </div>
   </header>
 
@@ -124,7 +125,21 @@
         </optgroup>
       </select>
     </label>
-    <button id="newTask">新しい課題</button>
+    <button id="prevTask">← 前の問題</button>
+    <button id="newTask">次の問題 →</button>
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)">
+      段階
+      <select id="stepSel">
+        <option value="0">1 基本三和音</option>
+        <option value="1">2 I–V連結</option>
+        <option value="2">3 I–IV–V–I</option>
+        <option value="3">4 六の和音</option>
+        <option value="4">5 終止四六</option>
+        <option value="5">6 属七の和音</option>
+        <option value="6">7 転回形と終止</option>
+        <option value="7">8 短調</option>
+      </select>
+    </label>
     <button id="playBtn">▶ 再生</button>
     <button id="stopBtn">■ 停止</button>
     <div class="tempo-control" aria-label="再生速度">
@@ -134,6 +149,14 @@
       <button id="tempoUp" type="button" title="速く">＋</button>
       <span id="tempoValue">90 BPM</span>
     </div>
+    <label class="tempo-control" aria-label="音色">
+      <span>音色</span>
+      <select id="timbreSel">
+        <option value="clarinet" selected>クラリネット</option>
+        <option value="organ">オルガン</option>
+        <option value="piano">ピアノ</option>
+      </select>
+    </label>
     <button id="undoBtn">↶ 元に戻す</button>
     <button id="redoBtn">↷ やり直し</button>
     <span class="spacer"></span>
@@ -142,7 +165,17 @@
     <button id="gradeBtn" class="primary">添削</button>
   </div>
 
-  <section class="score-wrap">
+  <section id="lessonPanel" style="background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0;box-shadow:var(--shadow)">
+  <div style="display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap">
+    <div>
+      <div id="lessonTitle" style="font-weight:800;font-size:15px">Step 1　基本三和音</div>
+      <div id="lessonProgress" style="margin-top:2px;font-size:11px;color:var(--accent);font-weight:700">問題 1 / 4</div>
+      <div id="lessonGoal" style="margin-top:4px;font-size:12px;color:var(--muted);line-height:1.6"></div>
+    </div>
+    <div id="lessonFocus" class="pill">重点：配置・重複</div>
+  </div>
+</section>
+<section class="score-wrap">
     <div class="voicebar">
       <span class="voice-label">入力声部：</span>
       <button class="voice-btn active" data-v="S">S</button>
@@ -169,7 +202,7 @@
     </div>
 
     <div class="analysis-strip" id="analysisStrip"></div>
-    <div class="help">各小節の五線上をタップ／クリックして全音符を入力します。S・Aは上段、Tは下段、Bは課題音です。調号は15の長調・15の短調に対応しています。短調では自然短音階の調号を表示し、V・V7・vii°では導音を臨時記号で半音上げて扱います。入力音を選択して ♯・♭・♮ を付けられます。</div>
+<div class="help">各小節の五線上をタップ／クリックして全音符を入力します。S・Aは上段、Tは下段、Bは課題音です。調号は15の長調・15の短調に対応しています。短調では自然短音階の調号を表示し、V・V7・vii°では導音を臨時記号で半音上げて扱います。入力音を選択して ♯・♭・♮ を付けられます。</div>
   </section>
 
   <div class="bottom-actions">
@@ -190,8 +223,8 @@
 
 <dialog id="rulesDialog">
   <div class="modal">
-    <h2>禁則解説（第1.12版）</h2>
-    <ul>
+    <h2>禁則解説（第1.16版）</h2>
+<ul>
       <li><b>連続5度・連続8度</b>：二声が同方向に進み、完全5度または完全8度が続く進行を要修正とします。</li>
       <li><b>並達5度・並達8度</b>：外声が同方向に完全5度・8度へ進み、ソプラノが跳躍する場合を注意とします。</li>
       <li><b>声部交差</b>：S &gt; A &gt; T &gt; B の音域順が崩れた場合を要修正とします。</li>
@@ -203,8 +236,12 @@
     <p>15の長調と15の短調に対応しています。転回形の認識に加え、第2転回形（四六）の用法と属七の各転回形の解決も判定します。</p>
     <ul>
       <li><b>V7→I / i の省略</b>：根音位置の完全V7（根音・第3音・第5音・第7音）から主和音へ解決する場合、主和音の第5音を省略し、根音を3声＋第3音1声とする形を正規の解決として認めます。逆にV7側で第5音を省略し根音を重複した場合は、完全な主和音へ解決できます。</li>
-      <li><b>三和音の重複</b>：根音位置では根音（低音）の重複、第2転回形では第5音（低音）の重複を基本とします。第1転回形では原則として低音重複を避けますが、減三和音の第1転回には例外があります。</li>
+      <li><b>三和音の重複</b>：根音位置では根音の重複を基本とします。六の和音（第1転回形）は根音・五音の重複が良好ですが、低音である三音の重複も可能です。四六の和音では低音＝五音の重複を基本とします。</li>
       <li><b>声部超越</b>：隣接する二声が次の和音で、相手声部の直前の位置を越えてしまう進行を注意として検出します。</li>
+      <li><b>反行の連続5度・8度</b>：並行の連続よりは弱いものの、初歩和声では使用を控えるものとして「注意」にします。</li>
+      <li><b>I/i と V の共通音</b>：基本形同士の連結では、共通する属音を同じ声部・同じ音高に保留することを基本として確認します。</li>
+      <li><b>導音の例外進行</b>：導音は原則として主音へ上行します。ただしアルト・テノールの内声にある場合、完全V7から主和音へ解決するときは三度下行して主和音の第5音へ進む形を認めます。</li>
+      <li><b>短調の増2度</b>：和声的短音階では第6音と導音付近などに増2度が生じやすいため、旋律声部に増2度が現れた場合は注意を表示します。</li>
       <li><b>終止四六</b>：主和音の I64 / i64 が属和音 V または V7 に進み、低音の第5音が保続される形を認識します。</li>
       <li><b>経過四六</b>：前後が同じ和音機能で、低音が同方向へ順次進行する中間の四六を認識します。</li>
       <li><b>保続四六</b>：前後の低音が保続され、その間に置かれる四六を認識します。</li>
@@ -299,40 +336,81 @@
     Abm:{label:"A♭ moll", tonicPc:8,  tonicLetter:5, sig:-7, mode:"minor"}
   };
 
-  const tasksC = [
-    [48,41,43,48,45,50,43,48],
-    [48,45,50,43,48,41,43,48],
-    [48,43,45,50,43,48,43,48],
-    [48,41,50,43,45,50,43,48],
-    [48,45,41,43,48,50,43,48],
-    [48,50,43,48,45,41,43,48]
-  ];
-  // 各バス課題専用の規則適合例。
-  // 終止の完全V7→Iでは、完全V7から第5音省略の主和音（根音3＋第3音）へ解決する。
-  const examplesC = [
-    {S:[72,72,71,72,72,74,74,72], A:[64,65,62,64,64,65,65,64], T:[55,57,55,55,57,57,59,60]},
-    {S:[67,69,69,71,72,72,71,72], A:[60,60,62,62,64,65,65,64], T:[52,52,53,55,55,57,62,60]},
-    {S:[72,71,69,69,71,72,71,72], A:[64,62,60,62,62,64,62,60], T:[55,55,52,53,55,55,53,52]},
-    {S:[76,77,77,79,76,77,77,76], A:[67,69,69,71,69,69,71,72], T:[60,60,62,62,60,62,62,60]},
-    {S:[79,81,81,79,79,77,77,76], A:[72,72,72,71,72,69,71,72], T:[64,64,65,62,64,62,62,60]},
-    {S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}
+  const lessonProblems = [
+    [{bass:[48,41,43,48,45,50,43,48],example:{S:[72,72,71,72,72,74,74,72], A:[64,65,62,64,64,65,65,64], T:[55,57,55,55,57,57,59,60]}},
+      {bass:[48,45,50,43,48,41,43,48],example:{S:[67,69,69,71,72,72,71,72], A:[60,60,62,62,64,65,65,64], T:[52,52,53,55,55,57,62,60]}},
+      {bass:[48,43,45,50,43,48,43,48],example:{S:[72,71,69,69,71,72,71,72], A:[64,62,60,62,62,64,62,60], T:[55,55,52,53,55,55,53,52]}},
+      {bass:[48,41,43,48,45,50,43,48],example:{S:[72,72,71,72,72,74,74,72], A:[64,65,62,64,64,65,65,64], T:[55,57,55,55,57,57,59,60]}}],
+    [{bass:[48,45,50,43,48,41,43,48],example:{S:[67,69,69,71,72,72,71,72], A:[60,60,62,62,64,65,65,64], T:[52,52,53,55,55,57,62,60]}},
+      {bass:[48,41,43,48,45,50,43,48],example:{S:[72,72,71,72,72,74,74,72], A:[64,65,62,64,64,65,65,64], T:[55,57,55,55,57,57,59,60]}},
+      {bass:[48,43,45,50,43,48,43,48],example:{S:[72,71,69,69,71,72,71,72], A:[64,62,60,62,62,64,62,60], T:[55,55,52,53,55,55,53,52]}},
+      {bass:[48,45,50,43,48,41,43,48],example:{S:[67,69,69,71,72,72,71,72], A:[60,60,62,62,64,65,65,64], T:[52,52,53,55,55,57,62,60]}}],
+    [{bass:[48,43,45,50,43,48,43,48],example:{S:[72,71,69,69,71,72,71,72], A:[64,62,60,62,62,64,62,60], T:[55,55,52,53,55,55,53,52]}},
+      {bass:[48,45,50,43,48,41,43,48],example:{S:[67,69,69,71,72,72,71,72], A:[60,60,62,62,64,65,65,64], T:[52,52,53,55,55,57,62,60]}},
+      {bass:[48,41,43,48,45,50,43,48],example:{S:[72,72,71,72,72,74,74,72], A:[64,65,62,64,64,65,65,64], T:[55,57,55,55,57,57,59,60]}},
+      {bass:[48,43,45,50,43,48,43,48],example:{S:[72,71,69,69,71,72,71,72], A:[64,62,60,62,62,64,62,60], T:[55,55,52,53,55,55,53,52]}}],
+    [{bass:[48,41,50,43,45,50,43,48],example:{S:[76,77,77,79,76,77,77,76], A:[67,69,69,71,69,69,71,72], T:[60,60,62,62,60,62,62,60]}},
+      {bass:[48,45,41,43,48,50,43,48],example:{S:[79,81,81,79,79,77,77,76], A:[72,72,72,71,72,69,71,72], T:[64,64,65,62,64,62,62,60]}},
+      {bass:[48,43,45,50,43,48,43,48],example:{S:[72,71,69,69,71,72,71,72], A:[64,62,60,62,62,64,62,60], T:[55,55,52,53,55,55,53,52]}},
+      {bass:[48,41,50,43,45,50,43,48],example:{S:[76,77,77,79,76,77,77,76], A:[67,69,69,71,69,69,71,72], T:[60,60,62,62,60,62,62,60]}}],
+    [{bass:[48,45,41,43,48,50,43,48],example:{S:[79,81,81,79,79,77,77,76], A:[72,72,72,71,72,69,71,72], T:[64,64,65,62,64,62,62,60]}},
+      {bass:[48,41,50,43,45,50,43,48],example:{S:[76,77,77,79,76,77,77,76], A:[67,69,69,71,69,69,71,72], T:[60,60,62,62,60,62,62,60]}},
+      {bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}},
+      {bass:[48,45,41,43,48,50,43,48],example:{S:[79,81,81,79,79,77,77,76], A:[72,72,72,71,72,69,71,72], T:[64,64,65,62,64,62,62,60]}}],
+    [{bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}},
+      {bass:[48,45,41,43,48,50,43,48],example:{S:[79,81,81,79,79,77,77,76], A:[72,72,72,71,72,69,71,72], T:[64,64,65,62,64,62,62,60]}},
+      {bass:[48,45,41,43,48,50,43,48],example:{S:[79,81,81,79,79,77,77,76], A:[72,72,72,71,72,69,71,72], T:[64,64,65,62,64,62,62,60]}},
+      {bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}}],
+    [{bass:[48,45,41,43,48,50,43,48],example:{S:[79,81,81,79,79,77,77,76], A:[72,72,72,71,72,69,71,72], T:[64,64,65,62,64,62,62,60]}},
+      {bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}},
+      {bass:[48,45,41,43,48,50,43,48],example:{S:[79,81,81,79,79,77,77,76], A:[72,72,72,71,72,69,71,72], T:[64,64,65,62,64,62,62,60]}},
+      {bass:[48,45,41,43,48,50,43,48],example:{S:[79,81,81,79,79,77,77,76], A:[72,72,72,71,72,69,71,72], T:[64,64,65,62,64,62,62,60]}}],
+    [{bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}},
+      {bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}},
+      {bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}},
+      {bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}}]
   ];
 
+
+  const curriculum = [
+    {title:"Step 1　基本三和音",goal:"I・IV・Vの基本形を中心に、まず四声の配置・根音重複・上三声の間隔に慣れます。",focus:"配置・重複",mode:"major"},
+    {title:"Step 2　I–V連結",goal:"IとVの連結で、共通音の保留と導音の解決を意識します。",focus:"共通音・導音",mode:"major"},
+    {title:"Step 3　I–IV–V–I",goal:"T–S–D–Tの基本的な機能進行を作り、連続5度・8度を避けます。",focus:"機能進行",mode:"major"},
+    {title:"Step 4　六の和音",goal:"第1転回形を含む配置を練習します。六の和音では根音・五音重複を良好とし、三音重複も可能です。",focus:"第1転回形",mode:"major"},
+    {title:"Step 5　終止四六",goal:"四六和音の用法、とくに終止四六から属和音への解決を意識します。",focus:"I64・終止",mode:"major"},
+    {title:"Step 6　属七の和音",goal:"V7の第7音の下行、導音の解決、完全V7から第5音省略Iへの解決を練習します。",focus:"V7・第7音",mode:"major"},
+    {title:"Step 7　転回形と終止",goal:"V6・V65・V43・V2などの転回形と、完全終止・不完全終止・半終止・偽終止を意識します。",focus:"転回形・終止",mode:"major"},
+    {title:"Step 8　短調",goal:"短調の導音、増2度、V・V7を含む基本的な声部進行を練習します。",focus:"短調・導音",mode:"minor"}
+  ];
   let currentKeyId = "C";
   let currentKey = KEYS[currentKeyId];
-  let taskIndex = 0;
+  let stepIndex = 0;
+  let problemIndex = 0;
+  function updateLessonUI(){
+    const lesson=curriculum[stepIndex];
+    document.getElementById("lessonTitle").textContent=lesson.title;
+    document.getElementById("lessonGoal").textContent=lesson.goal;
+    document.getElementById("lessonFocus").textContent=`重点：${lesson.focus}`;
+    document.getElementById("levelPill").textContent=`Step ${stepIndex+1}`;
+    document.getElementById("stepSel").value=String(stepIndex);
+    const problemCount=lessonProblems[stepIndex].length;
+    document.getElementById("lessonProgress").textContent=`問題 ${problemIndex+1} / ${problemCount}`;
+    taskNo.textContent=`Step ${stepIndex+1}・問題 ${problemIndex+1} / ${problemCount}`;
+  }
   let activeVoice = "S";
   let selected = {voice:"S", slot:0};
   let notes = {S:Array(8).fill(null),A:Array(8).fill(null),T:Array(8).fill(null),B:[]};
   let history = [], future = [];
   let errorKeys = new Set();
-  let audioCtx = null, liveNodes = [];
-  let settings = {tempoBpm:90, analysis:true, functionMode:"on"};
+  let audioCtx = null, liveNodes = [], playTimers = [], playingSlot = null;
+  let settings = {tempoBpm:90, analysis:true, functionMode:"on", timbre:"clarinet"};
 
   const ranges = {S:[60,82], A:[54,77], T:[47,70], B:[35,61]};
   const trebleTopY = 104, bassTopY = 306, lineGap = 12;
-  const staffLeft = 72, staffRight = 1550;
+  const staffLeft = 72;
   const measureStart = 322, measureWidth = 150;
+  // 五線は終止線でちょうど止める。
+  const staffRight = measureStart + 8*measureWidth;
   const xs = Array.from({length:8},(_,i)=>measureStart + i*measureWidth + 48);
 
   function mod(n,m){ return ((n%m)+m)%m; }
@@ -378,14 +456,25 @@
     }
     return raw.map(p=>({d:p.d+best,acc:p.acc}));
   }
-  function buildBassTask(){ return mapSequenceToVoice(tasksC[taskIndex],"B"); }
-  function buildExampleVoice(v){ return mapSequenceToVoice(examplesC[taskIndex][v],v); }
+  function buildBassTask(){ return mapSequenceToVoice(lessonProblems[stepIndex][problemIndex].bass,"B"); }
+  function buildExampleVoice(v){ return mapSequenceToVoice(lessonProblems[stepIndex][problemIndex].example[v],v); }
   function resetTask(clearHistory=true){
+    const lesson=curriculum[stepIndex];
+    if(lesson.mode==="minor" && currentKey.mode!=="minor"){
+      currentKeyId="Am"; currentKey=KEYS[currentKeyId]; keySel.value=currentKeyId;
+    }else if(lesson.mode==="major" && currentKey.mode!=="major"){
+      currentKeyId="C"; currentKey=KEYS[currentKeyId]; keySel.value=currentKeyId;
+    }
     notes={S:Array(8).fill(null),A:Array(8).fill(null),T:Array(8).fill(null),B:buildBassTask()};
     selected={voice:activeVoice,slot:0}; errorKeys.clear(); results.classList.remove("show");
     if(clearHistory){history=[];future=[];}
-    taskNo.textContent=`課題 ${taskIndex+1} / ${tasksC.length}`;
     keyPill.textContent=currentKey.label;
+    updateLessonUI();
+    const nextBtn=document.getElementById("newTask");
+    if(nextBtn){
+      const isLastProblem=problemIndex===lessonProblems[stepIndex].length-1;
+      nextBtn.textContent=isLastProblem&&stepIndex<curriculum.length-1?"次のStepへ →":"次の問題 →";
+    }
     render();
   }
   function accidentalGlyph(acc){ return acc===1?"♯":acc===-1?"♭":"♮"; }
@@ -429,15 +518,23 @@
     return p;
   }
 
+  function keyLayout(){
+    const count=Math.abs(currentKey.sig);
+    const keyStartX=154;
+    const accidentalStep=12.6;
+    // C dur / a moll のように調号が無い場合は拍子記号を音部記号のすぐ右へ。
+    // 調号が増えるごとに必要な幅だけ右へ送る。
+    const timeX=count===0 ? 169 : keyStartX+(count-1)*accidentalStep+25;
+    return {count,keyStartX,accidentalStep,timeX};
+  }
   function drawKeySignature(topY,clef){
-    const count=Math.abs(currentKey.sig); if(!count) return;
+    const {count,keyStartX,accidentalStep}=keyLayout(); if(!count) return;
     const isSharp=currentKey.sig>0;
     const trebleSharp=[38,35,39,36,33,37,34], trebleFlat=[34,37,33,36,32,35,31];
     const bassSharp=[24,21,25,22,19,23,20], bassFlat=[20,23,19,22,18,21,17];
     const ds=clef==="treble"?(isSharp?trebleSharp:trebleFlat):(isSharp?bassSharp:bassFlat);
     for(let i=0;i<count;i++){
-      // 調号は字幅を圧縮し、横方向の占有幅も狭くする。
-      const x=141+i*13.2, y=yForD(ds[i],clef)+8;
+      const x=keyStartX+i*accidentalStep, y=yForD(ds[i],clef)+8;
       const t=drawText(isSharp?"♯":"♭",x,y,{
         "font-size":"25",
         "font-family":"'Noto Music','Segoe UI Symbol',serif",
@@ -459,7 +556,7 @@
       fill:"#24211e"
     });
     drawKeySignature(topY,clef);
-    const tx=266;
+    const tx=keyLayout().timeX;
     drawText("4",tx,topY+20,{"font-size":"24","font-family":"Georgia,serif","font-weight":"700","text-anchor":"middle",fill:"#24211e"});
     drawText("4",tx,topY+43,{"font-size":"24","font-family":"Georgia,serif","font-weight":"700","text-anchor":"middle",fill:"#24211e"});
   }
@@ -502,10 +599,19 @@
     if(p.acc!==defaultAcc){
       drawText(accidentalGlyph(p.acc),x-24,y+8,{"font-size":"22","font-family":"'Noto Music','Segoe UI Symbol',serif","text-anchor":"middle",fill:stroke});
     }
-    const g=svgEl("g",{"data-v":v,"data-slot":i,style:v==="B"?"cursor:default":"cursor:pointer"});
+    const g=svgEl("g",{"data-v":v,"data-slot":i,style:v==="B"?"cursor:default":"cursor:ns-resize;touch-action:none"});
     g.appendChild(svgEl("ellipse",{cx:x,cy:y,rx:8.6,ry:5.1,fill:stroke,stroke:"none",transform:`rotate(-8 ${x} ${y})`}));
     // 全音符の内側は、対位法ツールに合わせて左肩上がりの白い楕円。
     g.appendChild(svgEl("ellipse",{cx:x-0.2,cy:y-0.2,rx:4.8,ry:2.0,fill:"#fffdf9",stroke:"none",transform:`rotate(28 ${x-0.2} ${y-0.2})`}));
+
+    // 音符が五線または加線上にある場合、線を符頭の中央にも通して表示する。
+    const refD=clef==="treble"?diatonicIndexNatural(64):diatonicIndexNatural(43);
+    const isOnLine=mod(p.d-refD,2)===0;
+    if(isOnLine){
+      const top=clef==="treble"?trebleTopY:bassTopY,bottom=top+4*lineGap;
+      const lineHalf=(y<top-1||y>bottom+1)?16:10.5;
+      g.appendChild(svgEl("line",{x1:x-lineHalf,y1:y,x2:x+lineHalf,y2:y,stroke:"#35322f","stroke-width":"1.15","pointer-events":"none"}));
+    }
     g.appendChild(svgEl("rect",{x:x-28,y:y-17,width:52,height:34,fill:"transparent"}));
     score.appendChild(g);
   }
@@ -517,6 +623,10 @@
     if(selected&&editable.includes(selected.voice)){
       const sx=measureStart+selected.slot*measureWidth;
       score.appendChild(svgEl("rect",{x:sx+1,y:67,width:measureWidth-2,height:338,rx:5,fill:"#4f6b61","fill-opacity":"0.035"}));
+    }
+    if(playingSlot!==null){
+      const px=measureStart+playingSlot*measureWidth;
+      score.appendChild(svgEl("rect",{x:px+2,y:67,width:measureWidth-4,height:338,rx:7,class:"playback-highlight"}));
     }
     drawStaff(trebleTopY,"treble");drawStaff(bassTopY,"bass");drawBrace();drawBarlines();
     for(let i=0;i<8;i++){
@@ -678,8 +788,46 @@
   }
   function nearestSlot(x){return Math.max(0,Math.min(7,Math.floor((x-measureStart)/measureWidth)))}
 
+  let noteDrag=null;
+  function svgPointFromEvent(ev){
+    const pt=score.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;
+    return pt.matrixTransform(score.getScreenCTM().inverse());
+  }
+  score.addEventListener("pointerdown",ev=>{
+    const target=ev.target.closest?.("[data-v]");
+    if(!target)return;
+    const v=target.dataset.v,slot=+target.dataset.slot;
+    if(v==="B")return;
+    noteDrag={v,slot,startX:ev.clientX,startY:ev.clientY,moved:false,original:{...notes[v][slot]}};
+    score.setPointerCapture?.(ev.pointerId);
+    ev.preventDefault();
+  });
+  score.addEventListener("pointermove",ev=>{
+    if(!noteDrag)return;
+    if(Math.hypot(ev.clientX-noteDrag.startX,ev.clientY-noteDrag.startY)>4)noteDrag.moved=true;
+    if(!noteDrag.moved)return;
+    const p=svgPointFromEvent(ev);
+    notes[noteDrag.v][noteDrag.slot]=pitchForY(p.y,noteDrag.v);
+    selected={voice:noteDrag.v,slot:noteDrag.slot};activeVoice=noteDrag.v;
+    errorKeys.clear();results.classList.remove("show");render();
+    ev.preventDefault();
+  });
+  score.addEventListener("pointerup",ev=>{
+    if(!noteDrag)return;
+    if(noteDrag.moved){
+      history.push(JSON.stringify({...notes,[noteDrag.v]:notes[noteDrag.v].map((p,i)=>i===noteDrag.slot?noteDrag.original:p)}));
+      if(history.length>80)history.shift();
+      future=[];
+      updateUndoRedo();
+    }
+    noteDrag=null;
+    try{score.releasePointerCapture?.(ev.pointerId)}catch(e){}
+  });
+  score.addEventListener("pointercancel",()=>{noteDrag=null});
+
   score.addEventListener("click",ev=>{
-    const pt=score.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const p=pt.matrixTransform(score.getScreenCTM().inverse());
+    if(noteDrag?.moved)return;
+    const p=svgPointFromEvent(ev);
     const target=ev.target.closest?.("[data-v]");
     if(target){const v=target.dataset.v,slot=+target.dataset.slot;if(v!=="B"){activeVoice=v;selected={voice:v,slot};render()}return}
     if(p.x<measureStart||p.x>measureStart+8*measureWidth)return;
@@ -708,8 +856,33 @@
   document.getElementById("redoBtn").onclick=()=>{if(!future.length)return;history.push(JSON.stringify(notes));restore(future.pop());updateUndoRedo()};
   document.getElementById("clearBtn").onclick=()=>{snapshot();editable.forEach(v=>notes[v]=Array(8).fill(null));errorKeys.clear();results.classList.remove("show");cadenceResult.textContent="";render()};
   document.getElementById("exampleBtn").onclick=()=>{snapshot();editable.forEach(v=>notes[v]=buildExampleVoice(v));errorKeys.clear();results.classList.remove("show");render()};
-  document.getElementById("newTask").onclick=()=>{taskIndex=(taskIndex+1)%tasksC.length;resetTask(true)};
-  keySel.addEventListener("change",e=>{currentKeyId=e.target.value;currentKey=KEYS[currentKeyId];taskIndex=0;resetTask(true)});
+  function goNextProblem(){
+    const count=lessonProblems[stepIndex].length;
+    if(problemIndex<count-1){
+      problemIndex++;
+    }else if(stepIndex<curriculum.length-1){
+      stepIndex++;
+      problemIndex=0;
+    }
+    resetTask(true);
+  }
+  function goPrevProblem(){
+    if(problemIndex>0){
+      problemIndex--;
+    }else if(stepIndex>0){
+      stepIndex--;
+      problemIndex=lessonProblems[stepIndex].length-1;
+    }
+    resetTask(true);
+  }
+  document.getElementById("newTask").onclick=goNextProblem;
+  document.getElementById("prevTask").onclick=goPrevProblem;
+  document.getElementById("stepSel").onchange=e=>{
+    stepIndex=Math.max(0,Math.min(curriculum.length-1,+e.target.value));
+    problemIndex=0;
+    resetTask(true);
+  };
+  keySel.addEventListener("change",e=>{currentKeyId=e.target.value;currentKey=KEYS[currentKeyId];resetTask(true)});
 
   function motion(a,b){return Math.sign(b-a)}
   function intervalClass(a,b){return Math.abs(a-b)%12}
@@ -770,10 +943,8 @@
           if(a.inversion==="root" && rootCount!==2){
             add("warning",`${i+1}和音：根音位置三和音では、基本的に根音（低音）を重複します。`,voices.map(v=>`${v}-${i}`));
           }else if(a.inversion==="first"){
-            const dimException=a.baseRoman==="vii°" || (currentKey.mode==="minor"&&a.baseRoman==="ii°");
-            if(!dimException && bassCount>1){
-              add("warning",`${i+1}和音：第1転回形では、原則として低音の重複を避けます。`,voices.map(v=>`${v}-${i}`));
-            }
+            // 六の和音は根音・五音の重複が良好だが、低音（三音）の重複も可能。
+            // したがって、導音重複など別の問題が無ければ重複だけでは減点しない。
           }else if(a.inversion==="second" && bassCount<2){
             add("warning",`${i+1}和音：第2転回形では、基本的に第5音である低音を重複します。`,voices.map(v=>`${v}-${i}`));
           }
@@ -839,8 +1010,10 @@
       for(const[v1,v2]of pairs){
         const p=[notes[v1][i],notes[v2][i],notes[v1][i+1],notes[v2][i+1]];if(p.some(x=>!x))continue;
         const[a1,a2,b1,b2]=p.map(midiOf),ic1=intervalClass(a1,a2),ic2=intervalClass(b1,b2),m1=motion(a1,b1),m2=motion(a2,b2);
-        if(m1!==0&&m1===m2&&ic1===7&&ic2===7)add("error",`${i+1}→${i+2}和音：${v1}-${v2} に連続5度があります。`,[`${v1}-${i}`,`${v2}-${i}`,`${v1}-${i+1}`,`${v2}-${i+1}`]);
-        if(m1!==0&&m1===m2&&ic1===0&&ic2===0)add("error",`${i+1}→${i+2}和音：${v1}-${v2} に連続8度（同度を含む）があります。`,[`${v1}-${i}`,`${v2}-${i}`,`${v1}-${i+1}`,`${v2}-${i+1}`]);
+        if(m1!==0&&m1===m2&&ic1===7&&ic2===7)add("error",`${i+1}→${i+2}和音：${v1}-${v2} に並行の連続5度があります。`,[`${v1}-${i}`,`${v2}-${i}`,`${v1}-${i+1}`,`${v2}-${i+1}`]);
+        if(m1!==0&&m1===m2&&ic1===0&&ic2===0)add("error",`${i+1}→${i+2}和音：${v1}-${v2} に並行の連続8度（同度を含む）があります。`,[`${v1}-${i}`,`${v2}-${i}`,`${v1}-${i+1}`,`${v2}-${i+1}`]);
+        if(m1!==0&&m2!==0&&m1===-m2&&ic1===7&&ic2===7)add("warning",`${i+1}→${i+2}和音：${v1}-${v2} に反行の連続5度があります。並行より弱いものの、初歩和声では避けます。`,[`${v1}-${i}`,`${v2}-${i}`,`${v1}-${i+1}`,`${v2}-${i+1}`]);
+        if(m1!==0&&m2!==0&&m1===-m2&&ic1===0&&ic2===0)add("warning",`${i+1}→${i+2}和音：${v1}-${v2} に反行の連続8度があります。並行より弱いものの、初歩和声では避けます。`,[`${v1}-${i}`,`${v2}-${i}`,`${v1}-${i+1}`,`${v2}-${i+1}`]);
       }
       // 声部超越（overlap）：次の低声が前の高声を越える、または次の高声が前の低声を下回る。
       for(const [upper,lower] of [["S","A"],["A","T"],["T","B"]]){
@@ -851,6 +1024,32 @@
           }
         }
       }
+      // I ↔ V（三和音）の基本連結では共通音（属音）を同声部・同音高で保留する。
+      {
+        const a0=analyzeChord(i),a1=analyzeChord(i+1);
+        const tonic=currentKey.mode==="minor"?"i":"I";
+        const pairIsBasic=((a0.baseRoman===tonic&&a1.baseRoman==="V")||(a0.baseRoman==="V"&&a1.baseRoman===tonic));
+        if(pairIsBasic && a0.inversion==="root" && a1.inversion==="root"){
+          const commonPc=mod(currentKey.tonicPc+7,12);
+          let held=false;
+          for(const v of voices){
+            const x=notes[v][i],y=notes[v][i+1];
+            if(x&&y&&midiOf(x)===midiOf(y)&&mod(midiOf(x),12)===commonPc){held=true;break;}
+          }
+          if(!held)add("warning",`${i+1}→${i+2}和音：I/i と V の基本連結では、共通音（属音）を同じ声部・同じ音高で保留するのが基本です。`,voices.flatMap(v=>[`${v}-${i}`,`${v}-${i+1}`]));
+        }
+      }
+
+      // 短調では和声的短音階の導音により増2度が生じやすい。旋律的な増2度を検出。
+      if(currentKey.mode==="minor"){
+        for(const v of voices){
+          const x=notes[v][i],y=notes[v][i+1];
+          if(x&&y&&Math.abs(y.d-x.d)===1&&Math.abs(midiOf(y)-midiOf(x))===3){
+            add("warning",`${i+1}→${i+2}和音：${v} に増2度の旋律進行があります。短調では導音付近で生じやすいため、避けられる配置を検討してください。`,[`${v}-${i}`,`${v}-${i+1}`]);
+          }
+        }
+      }
+
       const outer=[notes.S[i],notes.B[i],notes.S[i+1],notes.B[i+1]];
       if(outer.every(Boolean)){
         const[s1,b1,s2,b2]=outer.map(midiOf),target=intervalClass(s2,b2),sm=motion(s1,s2),bm=motion(b1,b2);
@@ -862,8 +1061,10 @@
           const x=notes[v][i],y=notes[v][i+1];if(!x||!y||mod(midiOf(x),12)!==leadPc)continue;
           const resolvedUp=midiOf(y)===midiOf(x)+1;
           // 完全V7→完全Iでは、内声の導音を下行させて両和音を完全体にする「導音の挫折」を許容。
+          const targetDominantPc=mod(currentKey.tonicPc+7,12);
           const frustratedInner=(v==="A"||v==="T") && from.baseRoman==="V7" && from.omittedFifth===false
-            && to.baseRoman===tonicRoman && !to.omittedFifth && midiOf(y)<midiOf(x);
+            && to.baseRoman===tonicRoman && !to.omittedFifth
+            && y.d===x.d-2 && mod(midiOf(y),12)===targetDominantPc;
           if(!resolvedUp && !frustratedInner)add("warning",`${i+1}→${i+2}和音：${v} の導音${leadingName}が${tonicName}へ上行していません。`,[`${v}-${i}`,`${v}-${i+1}`]);
         }
       }
@@ -875,7 +1076,13 @@
     let label,cls,summary;if(errors===0&&warns===0){label="適切";cls="ok";summary="現在の判定項目では問題は見つかりませんでした。"}else if(errors===0){label="注意";cls="warn";summary=`注意 ${warns} 件`}else{label="要修正";cls="bad";summary=`要修正 ${errors} 件 / 注意 ${warns} 件`}
     gradeLabel.className=`grade ${cls}`;gradeLabel.textContent=label;gradeSummary.textContent=summary;scoreNumber.textContent=n;issuesEl.innerHTML="";
     if(!out.length){const li=document.createElement("li");li.className="issue";li.textContent="基本的な禁則は検出されませんでした。";issuesEl.appendChild(li)}else out.slice(0,40).forEach(x=>{const li=document.createElement("li");li.className=`issue ${x.type}`;li.textContent=x.msg;issuesEl.appendChild(li)});
-    results.classList.add("show");render();results.scrollIntoView({behavior:"smooth",block:"nearest"});
+    results.classList.add("show");
+    const nextBtn=document.getElementById("newTask");
+    if(nextBtn){
+      const isLastProblem=problemIndex===lessonProblems[stepIndex].length-1;
+      nextBtn.textContent=isLastProblem&&stepIndex<curriculum.length-1?"次のStepへ →":"次の問題 →";
+    }
+    render();results.scrollIntoView({behavior:"smooth",block:"nearest"});
   }
   document.getElementById("gradeBtn").onclick=grade;
 
@@ -885,24 +1092,91 @@
     await audioCtx.resume();
     const stepMs=60000/settings.tempoBpm;
     const holdMs=stepMs*0.94;
-    for(let i=0;i<8;i++)setTimeout(()=>playChord(i,holdMs),i*stepMs);
+    for(let i=0;i<8;i++){
+      const timer=setTimeout(()=>{
+        playingSlot=i;
+        followPlayingSlot(i,true);
+        render();
+        playChord(i,holdMs);
+      },i*stepMs);
+      playTimers.push(timer);
+    }
+    playTimers.push(setTimeout(()=>{playingSlot=null;render()},8*stepMs));
   }
+
+  function followPlayingSlot(i,smooth=true){
+    const scroller=document.getElementById("scoreScroller");
+    if(!scroller)return;
+    const targetPx=xs[i]*(scroller.scrollWidth/1600);
+    const desired=targetPx-scroller.clientWidth*.45;
+    const max=Math.max(0,scroller.scrollWidth-scroller.clientWidth);
+    scroller.scrollTo({left:Math.max(0,Math.min(max,desired)),behavior:smooth?"smooth":"auto"});
+  }
+
+  function makeGain(level,now,dur,attack=.035,release=.10){
+    const gain=audioCtx.createGain();
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(level,now+attack);
+    gain.gain.setValueAtTime(level,now+Math.max(attack+.02,dur-release));
+    gain.gain.exponentialRampToValueAtTime(.0001,now+dur);
+    return gain;
+  }
+
+  function playClarinet(freq,level,now,dur){
+    // 奇数倍音を中心にした簡易クラリネット音色。
+    const master=makeGain(level,now,dur,.045,.12);
+    const filter=audioCtx.createBiquadFilter();filter.type="lowpass";filter.frequency.value=2200;filter.Q.value=.7;
+    master.connect(filter).connect(audioCtx.destination);
+    [[1,1],[3,.24],[5,.10]].forEach(([harm,amp])=>{
+      const osc=audioCtx.createOscillator(),g=audioCtx.createGain();
+      osc.type="sine";osc.frequency.value=freq*harm;g.gain.value=amp;
+      osc.connect(g).connect(master);osc.start(now);osc.stop(now+dur+.04);liveNodes.push(osc);
+    });
+  }
+
+  function playOrgan(freq,level,now,dur){
+    // 基音＋オクターブ＋12度の持続的な簡易オルガン音色。
+    const master=makeGain(level,now,dur,.025,.08);
+    master.connect(audioCtx.destination);
+    [[1,.72],[2,.25],[3,.13],[4,.08]].forEach(([harm,amp])=>{
+      const osc=audioCtx.createOscillator(),g=audioCtx.createGain();
+      osc.type="sine";osc.frequency.value=freq*harm;g.gain.value=amp;
+      osc.connect(g).connect(master);osc.start(now);osc.stop(now+dur+.04);liveNodes.push(osc);
+    });
+  }
+
+  function playPiano(freq,level,now,dur){
+    // サンプルを使わない軽量な簡易ピアノ。打鍵感を付けつつ次の和音近くまで余韻を残す。
+    const master=audioCtx.createGain();
+    master.gain.setValueAtTime(.0001,now);
+    master.gain.exponentialRampToValueAtTime(level*1.25,now+.012);
+    master.gain.exponentialRampToValueAtTime(level*.34,now+Math.min(.34,dur*.45));
+    master.gain.exponentialRampToValueAtTime(.0001,now+dur);
+    master.connect(audioCtx.destination);
+    [[1,1],[2,.23],[3,.08]].forEach(([harm,amp],idx)=>{
+      const osc=audioCtx.createOscillator(),g=audioCtx.createGain();
+      osc.type=idx===0?"triangle":"sine";osc.frequency.value=freq*harm;g.gain.value=amp;
+      osc.connect(g).connect(master);osc.start(now);osc.stop(now+dur+.04);liveNodes.push(osc);
+    });
+  }
+
   function playChord(i,durationMs){
     if(!audioCtx)return;
-    const now=audioCtx.currentTime;
+    const now=audioCtx.currentTime,dur=durationMs/1000;
     for(const v of voices){
       const p=notes[v][i];if(!p)continue;
-      const m=midiOf(p),osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
-      osc.type="sine";osc.frequency.value=440*Math.pow(2,(m-69)/12);
-      const level=v==="B"?.045:.03, dur=durationMs/1000;
-      gain.gain.setValueAtTime(.0001,now);
-      gain.gain.exponentialRampToValueAtTime(level,now+.035);
-      gain.gain.setValueAtTime(level,now+Math.max(.05,dur-.10));
-      gain.gain.exponentialRampToValueAtTime(.0001,now+dur);
-      osc.connect(gain).connect(audioCtx.destination);osc.start(now);osc.stop(now+dur+.04);liveNodes.push(osc);
+      const m=midiOf(p),freq=440*Math.pow(2,(m-69)/12),level=v==="B"?.040:.027;
+      if(settings.timbre==="organ")playOrgan(freq,level,now,dur);
+      else if(settings.timbre==="piano")playPiano(freq,level,now,dur);
+      else playClarinet(freq,level,now,dur);
     }
   }
-  function stop(){liveNodes.forEach(n=>{try{n.stop()}catch(e){}});liveNodes=[]}
+
+  function stop(){
+    playTimers.forEach(t=>clearTimeout(t));playTimers=[];
+    liveNodes.forEach(n=>{try{n.stop()}catch(e){}});liveNodes=[];
+    if(playingSlot!==null){playingSlot=null;render();}
+  }
   document.getElementById("playBtn").onclick=play;document.getElementById("stopBtn").onclick=stop;
 
   const rulesDialog=document.getElementById("rulesDialog"),settingsDialog=document.getElementById("settingsDialog");window.rulesDialog=rulesDialog;window.settingsDialog=settingsDialog;
@@ -918,6 +1192,9 @@
   document.getElementById("tempoUp").onclick=()=>setTempo(settings.tempoBpm+5);
   tempoSel.onchange=e=>setTempo(+e.target.value);
   setTempo(90);
+  const timbreSel=document.getElementById("timbreSel");
+  timbreSel.onchange=e=>settings.timbre=e.target.value;
+  settings.timbre=timbreSel.value;
 
   const scoreScroller=document.getElementById("scoreScroller"),scoreScrollBar=document.getElementById("scoreScrollBar");
   let syncingScroll=false;
