@@ -95,7 +95,12 @@
       .toolbar{border-radius:12px}.toolbar button{padding:8px 9px;font-size:12px}
       #score{height:430px}.settings-grid{grid-template-columns:1fr}.tempo-control{width:100%;order:10}.tempo-control #tempoRange{flex:1;width:auto}
     }
-  </style>
+  
+    #guideDialog::backdrop{background:rgba(37,33,29,.42);backdrop-filter:blur(2px)}
+    #guideDialog h3{font-size:14px;margin:20px 0 5px;color:#4f6b61}
+    #guideDialog p{margin:0;color:#4f4a44}
+
+</style>
 </head>
 <body>
 <div id="pageScrollTrack" aria-label="ページ全体の縦スクロールバー"><div id="pageScrollThumb"></div></div>
@@ -160,6 +165,7 @@
     <button id="undoBtn">↶ 元に戻す</button>
     <button id="redoBtn">↷ やり直し</button>
     <span class="spacer"></span>
+    <button id="guideBtn">操作方法</button>
     <button id="rulesBtn">禁則解説</button>
     <button id="settingsBtn">設定</button>
     <button id="gradeBtn" class="primary">添削</button>
@@ -223,7 +229,7 @@
 
 <dialog id="rulesDialog">
   <div class="modal">
-    <h2>禁則解説（第1.16版）</h2>
+    <h2>禁則解説（第1.17版）</h2>
 <ul>
       <li><b>連続5度・連続8度</b>：二声が同方向に進み、完全5度または完全8度が続く進行を要修正とします。</li>
       <li><b>並達5度・並達8度</b>：外声が同方向に完全5度・8度へ進み、ソプラノが跳躍する場合を注意とします。</li>
@@ -407,11 +413,26 @@
 
   const ranges = {S:[60,82], A:[54,77], T:[47,70], B:[35,61]};
   const trebleTopY = 104, bassTopY = 306, lineGap = 12;
-  const staffLeft = 72;
-  const measureStart = 322, measureWidth = 150;
-  // 五線は終止線でちょうど止める。
-  const staffRight = measureStart + 8*measureWidth;
-  const xs = Array.from({length:8},(_,i)=>measureStart + i*measureWidth + 48);
+  const staffLeft = 72, measureWidth = 150;
+  function notationLayout(){
+    const count=Math.abs(currentKey.sig);
+    const keyStartX=154, accidentalStep=12.6;
+    const timeX=count===0 ? 169 : keyStartX+(count-1)*accidentalStep+25;
+    // 拍子記号の右から第1音までを一定に保つ。
+    // 調号なしでは大きな空白を作らず、調号の数だけ必要幅を増やす。
+    const firstNoteX=timeX+54;
+    const measureStart=firstNoteX-48;
+    const staffRight=measureStart+8*measureWidth;
+    const xs=Array.from({length:8},(_,i)=>measureStart+i*measureWidth+48);
+    return {count,keyStartX,accidentalStep,timeX,firstNoteX,measureStart,staffRight,xs};
+  }
+  let measureStart=notationLayout().measureStart;
+  let staffRight=notationLayout().staffRight;
+  let xs=notationLayout().xs;
+  function refreshNotationGeometry(){
+    const l=notationLayout();
+    measureStart=l.measureStart; staffRight=l.staffRight; xs=l.xs;
+  }
 
   function mod(n,m){ return ((n%m)+m)%m; }
   function svgEl(tag, attrs={}) {
@@ -519,13 +540,8 @@
   }
 
   function keyLayout(){
-    const count=Math.abs(currentKey.sig);
-    const keyStartX=154;
-    const accidentalStep=12.6;
-    // C dur / a moll のように調号が無い場合は拍子記号を音部記号のすぐ右へ。
-    // 調号が増えるごとに必要な幅だけ右へ送る。
-    const timeX=count===0 ? 169 : keyStartX+(count-1)*accidentalStep+25;
-    return {count,keyStartX,accidentalStep,timeX};
+    const l=notationLayout();
+    return {count:l.count,keyStartX:l.keyStartX,accidentalStep:l.accidentalStep,timeX:l.timeX};
   }
   function drawKeySignature(topY,clef){
     const {count,keyStartX,accidentalStep}=keyLayout(); if(!count) return;
@@ -616,6 +632,7 @@
     score.appendChild(g);
   }
   function render(){
+    refreshNotationGeometry();
     score.innerHTML="";
     score.appendChild(svgEl("rect",{x:0,y:0,width:1600,height:470,fill:"#fffdf9"}));
     drawText("Bass課題",staffLeft,35,{"font-size":"14","font-weight":"650",fill:"#3d3935"});
@@ -1216,7 +1233,57 @@
   document.getElementById("analysisSel").onchange=e=>{settings.analysis=e.target.value==="on";renderAnalysis()};document.getElementById("functionSel").onchange=e=>{settings.functionMode=e.target.value;renderAnalysis()};
   if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
   resetTask(true);
+
+  const guideDialog=document.getElementById("guideDialog");
+  document.getElementById("guideBtn").onclick=()=>guideDialog.showModal();
+  document.getElementById("guideClose").onclick=()=>guideDialog.close();
+  guideDialog.addEventListener("click",e=>{
+    if(e.target===guideDialog)guideDialog.close();
+  });
+
 })();
 </script>
+
+<dialog id="guideDialog" style="max-width:760px;width:calc(100% - 28px);max-height:86vh;border:1px solid #d8cfc3;border-radius:18px;padding:0;background:#fffdf9;color:#28241f;box-shadow:0 20px 60px rgba(0,0,0,.24)">
+  <div style="position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 18px;background:#fffdf9;border-bottom:1px solid #e8e0d6">
+    <div>
+      <div style="font-size:18px;font-weight:800">操作方法</div>
+      <div style="font-size:11px;color:#766f67;margin-top:2px">和声法トレーナーの基本的な使い方</div>
+    </div>
+    <button id="guideClose" type="button">閉じる</button>
+  </div>
+  <div style="padding:18px;line-height:1.75;font-size:13px">
+    <h3 style="margin-top:0">1．課題を選ぶ</h3>
+    <p>「段階」から学習するStepを選びます。各Stepには複数の問題があります。「前の問題」「次の問題」で順番に進めます。</p>
+
+    <h3>2．音符を入力する</h3>
+    <p>ソプラノ・アルト・テノールから入力する声部を選び、五線譜上の入力したい高さをタップまたはクリックします。バスは課題としてあらかじめ与えられています。</p>
+
+    <h3>3．入力済みの音符を動かす</h3>
+    <p>入力した音符は上下にドラッグできます。移動先の音高へスナップするので、配置を試しながら声部進行を修正できます。</p>
+
+    <h3>4．臨時記号を使う</h3>
+    <p>必要に応じて♯・♭・♮を指定して入力します。調号は選択した調に応じて自動表示されます。</p>
+
+    <h3>5．添削する</h3>
+    <p>四声を入力したら「添削」を押します。和音、転回形、機能、終止形に加え、連続5度・8度、声部交差・超越、導音や属七第7音の解決、声部間隔などを確認します。</p>
+
+    <h3>6．模範解答を見る</h3>
+    <p>「模範解答例」を押すと、その課題の解答例を五線譜上に表示します。自分の配置と比較して確認できます。</p>
+
+    <h3>7．音を聴く</h3>
+    <p>「再生」で四声を同時に鳴らします。再生中は現在の和音を強調し、五線譜が自動追従します。再生速度はBPMで変更できます。</p>
+
+    <h3>8．音色を変える</h3>
+    <p>クラリネット・オルガン・ピアノから音色を選択できます。声部配置を耳でも確認してください。</p>
+
+    <h3>9．五線譜を移動する</h3>
+    <p>五線譜は横方向へスワイプできます。五線譜直下の横スクロールバーや左右ボタンも利用できます。画面全体は縦方向へスクロールできます。</p>
+
+    <h3>10．学習の進め方</h3>
+    <p>基本三和音から始め、I–V連結、I–IV–V–I、六の和音、終止四六、属七、転回形と終止、短調の順に進む構成です。添削結果を直してから次の問題へ進む使い方を想定しています。</p>
+  </div>
+</dialog>
+
 </body>
 </html>
