@@ -35,8 +35,11 @@
     .voice-btn{min-width:54px}
     .voice-btn[data-v="B"]{opacity:.55}
     .toolbar-key{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}.toolbar-select{border:1px solid var(--line);border-radius:9px;padding:8px 9px;background:#fff;color:var(--ink)}.accidental-label{margin-left:8px}
-    #scoreScroller{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
-    #score{display:block;min-width:1280px;width:100%;height:430px;background:#fffdf9;touch-action:none}
+    #scoreScroller{overflow-x:scroll;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;overscroll-behavior-x:contain;padding-bottom:4px}
+    #scoreScroller::-webkit-scrollbar{height:14px}
+    #scoreScroller::-webkit-scrollbar-thumb{background:#b8afa3;border:3px solid #fffdf8;border-radius:999px}
+    #scoreScroller::-webkit-scrollbar-track{background:#eee7dc;border-radius:999px}
+    #score{display:block;min-width:1600px;width:1600px;height:470px;background:#fffdf9;touch-action:none}
     .help{padding:10px 14px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
     .analysis-strip{display:grid;grid-template-columns:repeat(8,minmax(82px,1fr));gap:6px;padding:10px 12px;border-top:1px solid var(--line);overflow-x:auto}
     .analysis-cell{min-width:82px;text-align:center;background:#f8f4ed;border:1px solid #e5ddd0;border-radius:10px;padding:7px 4px}
@@ -280,10 +283,10 @@
   let settings = {tempo:650, analysis:true, functionMode:"on"};
 
   const ranges = {S:[60,82], A:[54,77], T:[47,70], B:[35,61]};
-  const trebleTopY = 100, bassTopY = 286, lineGap = 12;
-  const staffLeft = 72, staffRight = 1324;
-  const measureStart = 292, measureWidth = 126;
-  const xs = Array.from({length:8},(_,i)=>measureStart + i*measureWidth + 46);
+  const trebleTopY = 104, bassTopY = 306, lineGap = 12;
+  const staffLeft = 72, staffRight = 1550;
+  const measureStart = 322, measureWidth = 150;
+  const xs = Array.from({length:8},(_,i)=>measureStart + i*measureWidth + 48);
 
   function mod(n,m){ return ((n%m)+m)%m; }
   function svgEl(tag, attrs={}) {
@@ -386,16 +389,16 @@
     const bassSharp=[24,21,25,22,19,23,20], bassFlat=[20,23,19,22,18,21,17];
     const ds=clef==="treble"?(isSharp?trebleSharp:trebleFlat):(isSharp?bassSharp:bassFlat);
     for(let i=0;i<count;i++){
-      const x=128+i*16, y=yForD(ds[i],clef)+8;
+      const x=142+i*17, y=yForD(ds[i],clef)+8;
       drawText(isSharp?"♯":"♭",x,y,{"font-size":"25","font-family":"'Noto Music','Segoe UI Symbol',serif","text-anchor":"middle",fill:"#24211e"});
     }
   }
   function drawStaff(topY,clef){
     for(let i=0;i<5;i++) score.appendChild(svgEl("line",{x1:staffLeft,y1:topY+i*lineGap,x2:staffRight,y2:topY+i*lineGap,stroke:"#35322f","stroke-width":"1.15"}));
-    const clefY=clef==="treble"?topY+43:topY+38;
-    drawText(clef==="treble"?"𝄞":"𝄢",91,clefY,{"font-size":clef==="treble"?51:43,"font-family":"'Noto Music','Segoe UI Symbol',serif",fill:"#24211e"});
+    const clefY=clef==="treble"?topY+49:topY+42;
+    drawText(clef==="treble"?"𝄞":"𝄢",98,clefY,{"font-size":clef==="treble"?66:56,"font-family":"'Noto Music','Segoe UI Symbol',serif",fill:"#24211e"});
     drawKeySignature(topY,clef);
-    const tx=258;
+    const tx=286;
     drawText("4",tx,topY+20,{"font-size":"24","font-family":"Georgia,serif","font-weight":"700","text-anchor":"middle",fill:"#24211e"});
     drawText("4",tx,topY+43,{"font-size":"24","font-family":"Georgia,serif","font-weight":"700","text-anchor":"middle",fill:"#24211e"});
   }
@@ -433,24 +436,25 @@
     if(errorKeys.has(key))stroke="#b64a46";
     if(selected.voice===v&&selected.slot===i&&v!=="B")stroke="#4f6b61";
     addLedgerLines(x,p.d,clef);
-    if(selected.voice===v&&selected.slot===i&&v!=="B")score.appendChild(svgEl("ellipse",{cx:x,cy:y,rx:18,ry:13,fill:"#4f6b61","fill-opacity":"0.10"}));
+    if(selected.voice===v&&selected.slot===i&&v!=="B")score.appendChild(svgEl("ellipse",{cx:x,cy:y,rx:15,ry:11,fill:"#4f6b61","fill-opacity":"0.10"}));
     const defaultAcc=keyAccForD(p.d);
     if(p.acc!==defaultAcc){
-      drawText(accidentalGlyph(p.acc),x-27,y+8,{"font-size":"23","font-family":"'Noto Music','Segoe UI Symbol',serif","text-anchor":"middle",fill:stroke});
+      drawText(accidentalGlyph(p.acc),x-24,y+8,{"font-size":"22","font-family":"'Noto Music','Segoe UI Symbol',serif","text-anchor":"middle",fill:stroke});
     }
     const g=svgEl("g",{"data-v":v,"data-slot":i,style:v==="B"?"cursor:default":"cursor:pointer"});
-    g.appendChild(svgEl("ellipse",{cx:x,cy:y,rx:12.2,ry:7.1,fill:"#fffdf9",stroke,"stroke-width":"2.55",transform:`rotate(-11 ${x} ${y})`}));
-    g.appendChild(svgEl("rect",{x:x-34,y:y-18,width:58,height:36,fill:"transparent"}));
+    g.appendChild(svgEl("ellipse",{cx:x,cy:y,rx:9.2,ry:5.7,fill:stroke,stroke:"none",transform:`rotate(-11 ${x} ${y})`}));
+    g.appendChild(svgEl("ellipse",{cx:x-0.6,cy:y-0.4,rx:5.2,ry:2.7,fill:"#fffdf9",stroke:"none",transform:`rotate(-11 ${x-0.6} ${y-0.4})`}));
+    g.appendChild(svgEl("rect",{x:x-28,y:y-17,width:52,height:34,fill:"transparent"}));
     score.appendChild(g);
   }
   function render(){
     score.innerHTML="";
-    score.appendChild(svgEl("rect",{x:0,y:0,width:1360,height:430,fill:"#fffdf9"}));
+    score.appendChild(svgEl("rect",{x:0,y:0,width:1600,height:470,fill:"#fffdf9"}));
     drawText("Bass課題",staffLeft,35,{"font-size":"14","font-weight":"650",fill:"#3d3935"});
     drawText(currentKey.label,staffRight,35,{"font-size":"13","text-anchor":"end",fill:"#746e66"});
     if(selected&&editable.includes(selected.voice)){
       const sx=measureStart+selected.slot*measureWidth;
-      score.appendChild(svgEl("rect",{x:sx+1,y:67,width:measureWidth-2,height:306,rx:5,fill:"#4f6b61","fill-opacity":"0.035"}));
+      score.appendChild(svgEl("rect",{x:sx+1,y:67,width:measureWidth-2,height:338,rx:5,fill:"#4f6b61","fill-opacity":"0.035"}));
     }
     drawStaff(trebleTopY,"treble");drawStaff(bassTopY,"bass");drawBrace();drawBarlines();
     for(let i=0;i<8;i++){
@@ -745,8 +749,8 @@
   }
   document.getElementById("gradeBtn").onclick=grade;
 
-  async function play(){stop();if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();await audioCtx.resume();const stepMs=settings.tempo;for(let i=0;i<8;i++)setTimeout(()=>playChord(i,stepMs*.8),i*stepMs)}
-  function playChord(i,durationMs){if(!audioCtx)return;const now=audioCtx.currentTime;for(const v of voices){const p=notes[v][i];if(!p)continue;const m=midiOf(p),osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type="sine";osc.frequency.value=440*Math.pow(2,(m-69)/12);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(v==="B"?.045:.03,now+.03);gain.gain.exponentialRampToValueAtTime(.0001,now+durationMs/1000);osc.connect(gain).connect(audioCtx.destination);osc.start(now);osc.stop(now+durationMs/1000+.05);liveNodes.push(osc)}}
+  async function play(){stop();if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();await audioCtx.resume();const stepMs=settings.tempo;for(let i=0;i<8;i++)setTimeout(()=>playChord(i,Math.max(stepMs*1.15,900)),i*stepMs)}
+  function playChord(i,durationMs){if(!audioCtx)return;const now=audioCtx.currentTime;for(const v of voices){const p=notes[v][i];if(!p)continue;const m=midiOf(p),osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type="sine";osc.frequency.value=440*Math.pow(2,(m-69)/12);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(v==="B"?.045:.03,now+.03);gain.gain.setValueAtTime(v==="B"?.045:.03,now+Math.max(.04,durationMs/1000-.16));gain.gain.exponentialRampToValueAtTime(.0001,now+durationMs/1000);osc.connect(gain).connect(audioCtx.destination);osc.start(now);osc.stop(now+durationMs/1000+.08);liveNodes.push(osc)}}
   function stop(){liveNodes.forEach(n=>{try{n.stop()}catch(e){}});liveNodes=[]}
   document.getElementById("playBtn").onclick=play;document.getElementById("stopBtn").onclick=stop;
 
