@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta name="theme-color" content="#f4efe7" />
   <title>和声法トレーナー</title>
   <link rel="manifest" href="manifest.webmanifest" />
@@ -39,7 +40,7 @@
     #scoreScroller::-webkit-scrollbar{height:12px}
     #scoreScroller::-webkit-scrollbar-thumb{background:#aaa095;border:2px solid #fffdf8;border-radius:999px}
     #scoreScroller::-webkit-scrollbar-track{background:#eee7dc;border-radius:999px}
-    #score{display:block;min-width:1600px;width:1600px;height:470px;background:#fffdf9;touch-action:pan-x pan-y}
+    #score{display:block;min-width:1000px;height:470px;background:#fffdf9;touch-action:pan-x pan-y}
     .score-scroll-control{display:flex;align-items:center;gap:8px;padding:8px 12px 10px;border-top:1px solid #eee5da;background:#fbf8f2;position:relative;z-index:2}
     .score-scroll-control button{padding:5px 9px;min-width:38px;border-radius:8px}
     #scoreScrollBar{flex:1;min-width:120px;height:30px;accent-color:var(--accent);touch-action:pan-x}
@@ -100,6 +101,12 @@
     #guideDialog h3{font-size:14px;margin:20px 0 5px;color:#4f6b61}
     #guideDialog p{margin:0;color:#4f4a44}
 
+
+    .measure-width-control{display:flex;align-items:center;gap:7px;padding:5px 8px;border:1px solid var(--line);background:#fff;border-radius:11px;color:var(--muted);font-size:12px;white-space:nowrap}
+    .measure-width-control input{width:118px;accent-color:var(--accent)}
+    .measure-width-control output{min-width:52px;color:var(--ink);font-weight:650;text-align:center}
+    @media(max-width:680px){.measure-width-control{width:100%;order:11}.measure-width-control input{flex:1;width:auto}}
+
 </style>
 </head>
 <body>
@@ -143,6 +150,7 @@
         <option value="5">6 属七の和音</option>
         <option value="6">7 転回形と終止</option>
         <option value="7">8 短調</option>
+        <option value="8">9 二分音符の和声</option>
       </select>
     </label>
     <button id="playBtn">▶ 再生</button>
@@ -161,6 +169,11 @@
         <option value="organ">オルガン</option>
         <option value="piano">ピアノ</option>
       </select>
+    </label>
+    <label class="measure-width-control" aria-label="小節幅">
+      <span>小節幅</span>
+      <input id="measureWidthRange" type="range" min="110" max="190" step="5" value="150">
+      <output id="measureWidthValue">150 px</output>
     </label>
     <button id="undoBtn">↶ 元に戻す</button>
     <button id="redoBtn">↷ やり直し</button>
@@ -229,7 +242,7 @@
 
 <dialog id="rulesDialog">
   <div class="modal">
-    <h2>禁則解説（第1.17版）</h2>
+    <h2>禁則解説（第1.19版）</h2>
 <ul>
       <li><b>連続5度・連続8度</b>：二声が同方向に進み、完全5度または完全8度が続く進行を要修正とします。</li>
       <li><b>並達5度・並達8度</b>：外声が同方向に完全5度・8度へ進み、ソプラノが跳躍する場合を注意とします。</li>
@@ -374,7 +387,13 @@
     [{bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}},
       {bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}},
       {bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}},
-      {bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}}]
+      {bass:[48,50,43,48,45,41,43,48],example:{S:[72,69,71,72,72,72,71,72], A:[64,62,62,64,64,65,65,64], T:[55,53,55,55,57,57,62,60]}}],
+    [
+      {bass:[48,43,48,41,43,48,45,43,48,41,43,43,48,48],example:{S:[67,71,72,72,71,72,72,71,72,72,71,71,72,72],A:[64,67,64,65,67,64,64,67,64,65,67,65,64,64],T:[60,62,60,57,62,55,57,62,55,57,62,59,60,60]}},
+      {bass:[48,41,43,48,43,45,50,43,48,45,41,43,43,48],example:{S:[72,72,71,72,71,72,74,71,72,72,72,71,71,72],A:[64,65,67,64,67,64,65,67,64,64,65,67,65,64],T:[55,57,62,55,62,57,57,62,55,57,57,62,59,60]}},
+      {bass:[48,43,45,41,43,48,50,43,45,48,41,43,43,48],example:{S:[67,71,72,72,71,72,74,71,72,72,72,71,71,72],A:[64,67,64,65,67,64,65,67,64,64,65,67,65,64],T:[60,62,57,57,62,55,57,62,57,55,57,62,59,60]}},
+      {bass:[48,45,41,43,48,43,50,43,48,41,45,43,43,48],example:{S:[72,72,72,71,72,71,74,71,72,72,72,71,71,72],A:[64,64,65,67,64,67,65,67,64,65,64,67,65,64],T:[55,57,57,62,55,62,57,62,55,57,57,62,59,60]}}
+    ]
   ];
 
 
@@ -386,7 +405,8 @@
     {title:"Step 5　終止四六",goal:"四六和音の用法、とくに終止四六から属和音への解決を意識します。",focus:"I64・終止",mode:"major"},
     {title:"Step 6　属七の和音",goal:"V7の第7音の下行、導音の解決、完全V7から第5音省略Iへの解決を練習します。",focus:"V7・第7音",mode:"major"},
     {title:"Step 7　転回形と終止",goal:"V6・V65・V43・V2などの転回形と、完全終止・不完全終止・半終止・偽終止を意識します。",focus:"転回形・終止",mode:"major"},
-    {title:"Step 8　短調",goal:"短調の導音、増2度、V・V7を含む基本的な声部進行を練習します。",focus:"短調・導音",mode:"minor"}
+    {title:"Step 8　短調",goal:"短調の導音、増2度、V・V7を含む基本的な声部進行を練習します。",focus:"短調・導音",mode:"minor"},
+    {title:"Step 9　二分音符の和声",goal:"8小節のうち第4・第8小節を全音符、それ以外を二分音符2つとして、より細かな和声進行と声部進行を練習します。",focus:"二分音符・細かな連結",mode:"major"}
   ];
   let currentKeyId = "C";
   let currentKey = KEYS[currentKeyId];
@@ -405,7 +425,7 @@
   }
   let activeVoice = "S";
   let selected = {voice:"S", slot:0};
-  let notes = {S:Array(8).fill(null),A:Array(8).fill(null),T:Array(8).fill(null),B:[]};
+  let notes = {S:[],A:[],T:[],B:[]};
   let history = [], future = [];
   let errorKeys = new Set();
   let audioCtx = null, liveNodes = [], playTimers = [], playingSlot = null;
@@ -413,25 +433,49 @@
 
   const ranges = {S:[60,82], A:[54,77], T:[47,70], B:[35,61]};
   const trebleTopY = 104, bassTopY = 306, lineGap = 12;
-  const staffLeft = 72, measureWidth = 150;
+  const staffLeft = 72;
+  let measureWidth = 150;
+
+  function currentRhythm(){
+    // Step 9：8小節。4・8小節は全音符、それ以外は二分音符2つ。
+    if(stepIndex===8){
+      const slots=[];
+      for(let m=0;m<8;m++){
+        if(m===3||m===7){
+          slots.push({measure:m,part:0,duration:"whole"});
+        }else{
+          slots.push({measure:m,part:0,duration:"half"});
+          slots.push({measure:m,part:1,duration:"half"});
+        }
+      }
+      return slots;
+    }
+    return Array.from({length:8},(_,m)=>({measure:m,part:0,duration:"whole"}));
+  }
+
   function notationLayout(){
     const count=Math.abs(currentKey.sig);
     const keyStartX=154, accidentalStep=12.6;
-    const timeX=count===0 ? 169 : keyStartX+(count-1)*accidentalStep+25;
-    // 拍子記号の右から第1音までを一定に保つ。
-    // 調号なしでは大きな空白を作らず、調号の数だけ必要幅を増やす。
-    const firstNoteX=timeX+54;
-    const measureStart=firstNoteX-48;
+    const lastKeyX=count===0?136:keyStartX+(count-1)*accidentalStep;
+    const timeX=count===0?165:lastKeyX+24;
+    const measureStart=timeX+20;
+    const rhythm=currentRhythm();
+    const xs=rhythm.map(r=>{
+      const left=measureStart+r.measure*measureWidth;
+      if(r.duration==="whole") return left+measureWidth*.40;
+      return left+measureWidth*(r.part===0?.27:.70);
+    });
     const staffRight=measureStart+8*measureWidth;
-    const xs=Array.from({length:8},(_,i)=>measureStart+i*measureWidth+48);
-    return {count,keyStartX,accidentalStep,timeX,firstNoteX,measureStart,staffRight,xs};
+    return {count,keyStartX,accidentalStep,timeX,measureStart,staffRight,xs,rhythm};
   }
+
   let measureStart=notationLayout().measureStart;
   let staffRight=notationLayout().staffRight;
   let xs=notationLayout().xs;
+  let rhythmSlots=notationLayout().rhythm;
   function refreshNotationGeometry(){
     const l=notationLayout();
-    measureStart=l.measureStart; staffRight=l.staffRight; xs=l.xs;
+    measureStart=l.measureStart;staffRight=l.staffRight;xs=l.xs;rhythmSlots=l.rhythm;
   }
 
   function mod(n,m){ return ((n%m)+m)%m; }
@@ -486,7 +530,8 @@
     }else if(lesson.mode==="major" && currentKey.mode!=="major"){
       currentKeyId="C"; currentKey=KEYS[currentKeyId]; keySel.value=currentKeyId;
     }
-    notes={S:Array(8).fill(null),A:Array(8).fill(null),T:Array(8).fill(null),B:buildBassTask()};
+    const bass=buildBassTask();
+    notes={S:Array(bass.length).fill(null),A:Array(bass.length).fill(null),T:Array(bass.length).fill(null),B:bass};
     selected={voice:activeVoice,slot:0}; errorKeys.clear(); results.classList.remove("show");
     if(clearHistory){history=[];future=[];}
     keyPill.textContent=currentKey.label;
@@ -628,31 +673,42 @@
       const lineHalf=(y<top-1||y>bottom+1)?16:10.5;
       g.appendChild(svgEl("line",{x1:x-lineHalf,y1:y,x2:x+lineHalf,y2:y,stroke:"#35322f","stroke-width":"1.15","pointer-events":"none"}));
     }
-    g.appendChild(svgEl("rect",{x:x-28,y:y-17,width:52,height:34,fill:"transparent"}));
+    if((rhythmSlots[i]?.duration||"whole")==="half"){
+      const stemUp=(v==="S"||v==="T");
+      const stemX=stemUp?x+7.2:x-7.2;
+      const stemEnd=stemUp?y-30:y+30;
+      g.appendChild(svgEl("line",{x1:stemX,y1:y,x2:stemX,y2:stemEnd,stroke:stroke,"stroke-width":"1.6","pointer-events":"none"}));
+    }
+    g.appendChild(svgEl("rect",{x:x-28,y:y-20,width:52,height:40,fill:"transparent"}));
     score.appendChild(g);
   }
   function render(){
     refreshNotationGeometry();
     score.innerHTML="";
-    score.appendChild(svgEl("rect",{x:0,y:0,width:1600,height:470,fill:"#fffdf9"}));
+    const svgWidth=Math.max(1040,staffRight+35);
+    score.setAttribute("viewBox",`0 0 ${svgWidth} 470`);
+    score.style.width=`${svgWidth}px`;
+    score.appendChild(svgEl("rect",{x:0,y:0,width:svgWidth,height:470,fill:"#fffdf9"}));
     drawText("Bass課題",staffLeft,35,{"font-size":"14","font-weight":"650",fill:"#3d3935"});
     drawText(currentKey.label,staffRight,35,{"font-size":"13","text-anchor":"end",fill:"#746e66"});
-    if(selected&&editable.includes(selected.voice)){
-      const sx=measureStart+selected.slot*measureWidth;
+    if(selected&&editable.includes(selected.voice)&&rhythmSlots[selected.slot]){
+      const m=rhythmSlots[selected.slot].measure;
+      const sx=measureStart+m*measureWidth;
       score.appendChild(svgEl("rect",{x:sx+1,y:67,width:measureWidth-2,height:338,rx:5,fill:"#4f6b61","fill-opacity":"0.035"}));
     }
-    if(playingSlot!==null){
-      const px=measureStart+playingSlot*measureWidth;
+    if(playingSlot!==null&&rhythmSlots[playingSlot]){
+      const m=rhythmSlots[playingSlot].measure;
+      const px=measureStart+m*measureWidth;
       score.appendChild(svgEl("rect",{x:px+2,y:67,width:measureWidth-4,height:338,rx:7,class:"playback-highlight"}));
     }
     drawStaff(trebleTopY,"treble");drawStaff(bassTopY,"bass");drawBrace();drawBarlines();
     for(let i=0;i<8;i++){
       const left=measureStart+i*measureWidth;
-      drawText(String(i+1),left+12,76,{"font-size":"10.5",fill:"#8b837a"});
+      drawText(String(i+1),left+9,76,{"font-size":"10.5",fill:"#8b837a"});
       score.appendChild(svgEl("rect",{x:left+1,y:trebleTopY-52,width:measureWidth-2,height:138,fill:"transparent","data-slot":i,"data-area":"treble"}));
       score.appendChild(svgEl("rect",{x:left+1,y:bassTopY-52,width:measureWidth-2,height:138,fill:"transparent","data-slot":i,"data-area":"bass"}));
     }
-    for(const v of voices)for(let i=0;i<8;i++)if(notes[v][i])drawWholeNote(v,i,notes[v][i]);
+    for(const v of voices)for(let i=0;i<notes.B.length;i++)if(notes[v][i])drawWholeNote(v,i,notes[v][i]);
     drawText("S / A",staffLeft+7,trebleTopY-13,{"font-size":"9.5",fill:"#918980"});
     drawText("T / B",staffLeft+7,bassTopY-13,{"font-size":"9.5",fill:"#918980"});
     renderAnalysis();
@@ -748,7 +804,7 @@
   function functionLabel(f){return f==="T"?"T 主機能":f==="S"?"S 下属機能":f==="D"?"D 属機能":""}
   function cadenceType(){
     const arr=[];
-    for(let i=0;i<8;i++){
+    for(let i=0;i<notes.B.length;i++){
       const a=analyzeChord(i);
       if(a && a.roman!=="—" && a.roman!=="?") arr.push({i,a});
     }
@@ -797,13 +853,18 @@
     return {type:"open",label:`${f?functionLabel(f):last.a.roman}で終了`,from:last.i,to:last.i,severity:"warning"};
   }
   function renderAnalysis(){
-    analysisStrip.innerHTML="";if(!settings.analysis){analysisStrip.style.display="none";return}analysisStrip.style.display="grid";
-    for(let i=0;i<8;i++){
+    analysisStrip.innerHTML="";
+    analysisStrip.style.gridTemplateColumns=`repeat(${Math.max(8,notes.B.length)},minmax(82px,1fr))`;if(!settings.analysis){analysisStrip.style.display="none";return}analysisStrip.style.display="grid";
+    for(let i=0;i<notes.B.length;i++){
       const a=analyzeChord(i),f=settings.functionMode!=="off"?harmonicFunction(a):null,d=document.createElement("div");d.className="analysis-cell";
       d.innerHTML=`<div class="roman">${a.roman}</div>${f?`<div class="func ${f}">${functionLabel(f)}</div>`:""}<div class="notes">${a.notes||"未入力"}</div>`;analysisStrip.appendChild(d)
     }
   }
-  function nearestSlot(x){return Math.max(0,Math.min(7,Math.floor((x-measureStart)/measureWidth)))}
+  function nearestSlot(x){
+    let best=0,dist=Infinity;
+    xs.forEach((xx,i)=>{const d=Math.abs(xx-x);if(d<dist){dist=d;best=i}});
+    return best;
+  }
 
   let noteDrag=null;
   function svgPointFromEvent(ev){
@@ -871,7 +932,7 @@
   document.getElementById("deleteNote").onclick=()=>{const{voice,slot}=selected;if(!editable.includes(voice)||!notes[voice][slot])return;snapshot();notes[voice][slot]=null;render()};
   document.getElementById("undoBtn").onclick=()=>{if(!history.length)return;future.push(JSON.stringify(notes));restore(history.pop());updateUndoRedo()};
   document.getElementById("redoBtn").onclick=()=>{if(!future.length)return;history.push(JSON.stringify(notes));restore(future.pop());updateUndoRedo()};
-  document.getElementById("clearBtn").onclick=()=>{snapshot();editable.forEach(v=>notes[v]=Array(8).fill(null));errorKeys.clear();results.classList.remove("show");cadenceResult.textContent="";render()};
+  document.getElementById("clearBtn").onclick=()=>{snapshot();editable.forEach(v=>notes[v]=Array(notes.B.length).fill(null));errorKeys.clear();results.classList.remove("show");cadenceResult.textContent="";render()};
   document.getElementById("exampleBtn").onclick=()=>{snapshot();editable.forEach(v=>notes[v]=buildExampleVoice(v));errorKeys.clear();results.classList.remove("show");render()};
   function goNextProblem(){
     const count=lessonProblems[stepIndex].length;
@@ -909,7 +970,7 @@
   function stepDir(a,b){if(a==null||b==null)return 0;const d=b-a;return Math.abs(d)<=2?Math.sign(d):0}
   function classifySixFour(i){
     const a=analyzeChord(i); if(a.inversion!=="second") return null;
-    const prev=i>0?analyzeChord(i-1):null, next=i<7?analyzeChord(i+1):null;
+    const prev=i>0?analyzeChord(i-1):null, next=i<notes.B.length-1?analyzeChord(i+1):null;
     const b0=bassMidiAt(i-1), b1=bassMidiAt(i), b2=bassMidiAt(i+1);
     const tonic=currentKey.mode==="minor"?"i":"I";
     // 終止四六: I64/i64 -> V/V7, scale degree 5 held in bass.
@@ -926,7 +987,7 @@
     errorKeys.clear();const out=[];const add=(type,msg,keys=[])=>{out.push({type,msg});keys.forEach(k=>errorKeys.add(k))};
     let missing=0;editable.forEach(v=>notes[v].forEach((p,i)=>{if(!p){missing++;errorKeys.add(`${v}-${i}`)}}));if(missing)add("error",`未入力の音が ${missing} 個あります。`);
     const leadPc=mod(currentKey.tonicPc+11,12),leadingName=scaleDegreeName(6,currentKey.mode==="minor"?1:0),tonicName=scaleDegreeName(0),tonicRoman=currentKey.mode==="minor"?"i":"I";
-    for(let i=0;i<8;i++){
+    for(let i=0;i<notes.B.length;i++){
       const ps=voices.map(v=>notes[v][i]);if(ps.some(x=>!x))continue;const m=ps.map(midiOf);
       if(!(m[0]>m[1]&&m[1]>m[2]&&m[2]>m[3]))add("error",`${i+1}和音：声部交差があります。`,voices.map(v=>`${v}-${i}`));
       if(m[0]-m[1]>12)add("error",`${i+1}和音：ソプラノとアルトが1オクターヴを超えて開いています。`,[`S-${i}`,`A-${i}`]);
@@ -969,13 +1030,13 @@
       }
     }
     // 転回形の用法判定
-    for(let i=0;i<8;i++){
+    for(let i=0;i<notes.B.length;i++){
       const a=analyzeChord(i); if(a.roman==="—"||a.roman==="?") continue;
       if(a.inversion==="second"){
         const kind=classifySixFour(i);
         if(kind==="other") add("warning",`${i+1}和音：${a.roman} の第2転回形は、終止・経過・保続四六のいずれにも明確に該当しません。用法を確認してください。`,voices.map(v=>`${v}-${i}`));
       }
-      if(a.baseRoman==="V7" && i<7){
+      if(a.baseRoman==="V7" && i<notes.B.length-1){
         const nxt=analyzeChord(i+1);
         // 属七の和音第7音（調の第4音）は原則下行。
         const seventhPc=mod(currentKey.tonicPc+5,12);
@@ -1001,7 +1062,7 @@
     // 機能和声の流れを判定。例外を過剰に禁則化しないため、明確な逆進行のみ注意扱い。
     if(settings.functionMode==="on" && missing===0){
       const seq=[];
-      for(let i=0;i<8;i++){
+      for(let i=0;i<notes.B.length;i++){
         const a=analyzeChord(i),f=harmonicFunction(a);
         if(f) seq.push({i,a,f});
       }
@@ -1023,7 +1084,7 @@
       }
     }
     const pairs=[["S","A"],["S","T"],["S","B"],["A","T"],["A","B"],["T","B"]];
-    for(let i=0;i<7;i++){
+    for(let i=0;i<notes.B.length-1;i++){
       for(const[v1,v2]of pairs){
         const p=[notes[v1][i],notes[v2][i],notes[v1][i+1],notes[v2][i+1]];if(p.some(x=>!x))continue;
         const[a1,a2,b1,b2]=p.map(midiOf),ic1=intervalClass(a1,a2),ic2=intervalClass(b1,b2),m1=motion(a1,b1),m2=motion(a2,b2);
@@ -1086,7 +1147,7 @@
         }
       }
     }
-    for(const v of editable)for(let i=0;i<7;i++){const a=notes[v][i],b=notes[v][i+1];if(a&&b&&Math.abs(midiOf(b)-midiOf(a))>12)add("warning",`${i+1}→${i+2}和音：${v} に1オクターヴを超える跳躍があります。`,[`${v}-${i}`,`${v}-${i+1}`])}
+    for(const v of editable)for(let i=0;i<notes.B.length-1;i++){const a=notes[v][i],b=notes[v][i+1];if(a&&b&&Math.abs(midiOf(b)-midiOf(a))>12)add("warning",`${i+1}→${i+2}和音：${v} に1オクターヴを超える跳躍があります。`,[`${v}-${i}`,`${v}-${i+1}`])}
     const cad=missing===0?cadenceType():null;
     cadenceResult.textContent=cad?`終止形：${cad.label}${cad.detail?` — ${cad.detail}`:""}`:"";
     const errors=out.filter(x=>x.type==="error").length,warns=out.filter(x=>x.type==="warning").length,n=Math.max(0,100-errors*10-warns*4);
@@ -1107,24 +1168,29 @@
     stop();
     if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
     await audioCtx.resume();
-    const stepMs=60000/settings.tempoBpm;
-    const holdMs=stepMs*0.94;
-    for(let i=0;i<8;i++){
+
+    const halfMs=60000/settings.tempoBpm*2;
+    let offset=0;
+    for(let i=0;i<notes.B.length;i++){
+      const durType=rhythmSlots[i]?.duration||"whole";
+      const slotMs=durType==="half"?halfMs:halfMs*2;
+      const holdMs=slotMs*.94;
       const timer=setTimeout(()=>{
         playingSlot=i;
         followPlayingSlot(i,true);
         render();
         playChord(i,holdMs);
-      },i*stepMs);
+      },offset);
       playTimers.push(timer);
+      offset+=slotMs;
     }
-    playTimers.push(setTimeout(()=>{playingSlot=null;render()},8*stepMs));
+    playTimers.push(setTimeout(()=>{playingSlot=null;render()},offset));
   }
 
   function followPlayingSlot(i,smooth=true){
     const scroller=document.getElementById("scoreScroller");
     if(!scroller)return;
-    const targetPx=xs[i]*(scroller.scrollWidth/1600);
+    const svgW=parseFloat(score.getAttribute("viewBox").split(" ")[2])||1600;const targetPx=xs[i]*(scroller.scrollWidth/svgW);
     const desired=targetPx-scroller.clientWidth*.45;
     const max=Math.max(0,scroller.scrollWidth-scroller.clientWidth);
     scroller.scrollTo({left:Math.max(0,Math.min(max,desired)),behavior:smooth?"smooth":"auto"});
@@ -1212,6 +1278,16 @@
   const timbreSel=document.getElementById("timbreSel");
   timbreSel.onchange=e=>settings.timbre=e.target.value;
   settings.timbre=timbreSel.value;
+  const measureWidthRange=document.getElementById("measureWidthRange");
+  const measureWidthValue=document.getElementById("measureWidthValue");
+  function setMeasureWidth(v){
+    measureWidth=Math.max(110,Math.min(190,+v||150));
+    measureWidthRange.value=String(measureWidth);
+    measureWidthValue.textContent=`${measureWidth} px`;
+    render();
+    requestAnimationFrame(syncBottomScroll);
+  }
+  measureWidthRange.addEventListener("input",e=>setMeasureWidth(e.target.value));
 
   const scoreScroller=document.getElementById("scoreScroller"),scoreScrollBar=document.getElementById("scoreScrollBar");
   let syncingScroll=false;
@@ -1228,6 +1304,7 @@
   document.getElementById("scrollLeftBtn").onclick=()=>scoreScroller.scrollBy({left:-Math.max(220,scoreScroller.clientWidth*.65),behavior:"smooth"});
   document.getElementById("scrollRightBtn").onclick=()=>scoreScroller.scrollBy({left:Math.max(220,scoreScroller.clientWidth*.65),behavior:"smooth"});
   window.addEventListener("resize",syncBottomScroll);
+  setMeasureWidth(150);
   setTimeout(syncBottomScroll,0);
 
   document.getElementById("analysisSel").onchange=e=>{settings.analysis=e.target.value==="on";renderAnalysis()};document.getElementById("functionSel").onchange=e=>{settings.functionMode=e.target.value;renderAnalysis()};
@@ -1280,7 +1357,13 @@
     <h3>9．五線譜を移動する</h3>
     <p>五線譜は横方向へスワイプできます。五線譜直下の横スクロールバーや左右ボタンも利用できます。画面全体は縦方向へスクロールできます。</p>
 
-    <h3>10．学習の進め方</h3>
+    <h3>10．二分音符の課題</h3>
+    <p>Step 9では8小節のうち、第4小節と第8小節が全音符、それ以外は1小節に二分音符2つです。1小節内で2回和音が変わるため、より細かな声部進行を練習できます。</p>
+
+    <h3>11．小節幅を調整する</h3>
+    <p>上部の「小節幅」スライダーで110～190pxの範囲を変更できます。狭くすると多くの小節を一度に見られ、広くすると音符を入力しやすくなります。</p>
+
+    <h3>12．学習の進め方</h3>
     <p>基本三和音から始め、I–V連結、I–IV–V–I、六の和音、終止四六、属七、転回形と終止、短調の順に進む構成です。添削結果を直してから次の問題へ進む使い方を想定しています。</p>
   </div>
 </dialog>
