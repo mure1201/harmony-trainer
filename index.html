@@ -114,7 +114,7 @@
 <div class="app">
   <header>
     <div class="title">
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h1>和声法トレーナー</h1><span id="versionBadge" class="pill" style="padding:4px 8px;font-size:11px;font-weight:700">v1.22</span></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h1>和声法トレーナー</h1><span id="versionBadge" class="pill" style="padding:4px 8px;font-size:11px;font-weight:700">v1.24</span></div>
       <p>四声体・バス課題 / 長短調・機能和声判定対応版</p>
     </div>
     <div class="statusbar">
@@ -248,7 +248,7 @@
 
 <dialog id="rulesDialog">
   <div class="modal">
-    <h2>禁則解説（第1.22版）</h2>
+    <h2>禁則解説（第1.24版）</h2>
 <ul>
       <li><b>連続5度・連続8度</b>：二声が同方向に進み、完全5度または完全8度が続く進行を要修正とします。</li>
       <li><b>並達5度・並達8度</b>：外声が同方向に完全5度・8度へ進み、ソプラノが跳躍する場合を注意とします。</li>
@@ -716,8 +716,15 @@
     }
     const g=svgEl("g",{"data-v":v,"data-slot":i,style:v==="B"?"cursor:default":"cursor:ns-resize;touch-action:none"});
     g.appendChild(svgEl("ellipse",{cx:x,cy:y,rx:8.6,ry:5.1,fill:stroke,stroke:"none",transform:`rotate(-8 ${x} ${y})`}));
-    // 全音符の内側は、対位法ツールに合わせて左肩上がりの白い楕円。
-    g.appendChild(svgEl("ellipse",{cx:x-0.2,cy:y-0.2,rx:4.8,ry:2.0,fill:"#fffdf9",stroke:"none",transform:`rotate(28 ${x-0.2} ${y-0.2})`}));
+    // 符頭内側の白い楕円：
+    // 全音符は左肩上がり、二分音符は右肩上がり。
+    const noteDuration=rhythmSlots[i]?.duration||"whole";
+    const innerAngle=noteDuration==="half"?-28:28;
+    g.appendChild(svgEl("ellipse",{
+      cx:x-0.2,cy:y-0.2,rx:4.8,ry:2.0,
+      fill:"#fffdf9",stroke:"none",
+      transform:`rotate(${innerAngle} ${x-0.2} ${y-0.2})`
+    }));
 
     // 音符が五線または加線上にある場合、線を符頭の中央にも通して表示する。
     const refD=clef==="treble"?diatonicIndexNatural(64):diatonicIndexNatural(43);
@@ -728,10 +735,17 @@
       g.appendChild(svgEl("line",{x1:x-lineHalf,y1:y,x2:x+lineHalf,y2:y,stroke:"#35322f","stroke-width":"1.15","pointer-events":"none"}));
     }
     if((rhythmSlots[i]?.duration||"whole")==="half"){
+      // 二分音符の符幹方向は声部ごとに固定：
+      // S・T＝常に上向き、A・B＝常に下向き。
+      // 符幹長は五線の「3間」分（lineGap × 3）に統一する。
       const stemUp=(v==="S"||v==="T");
+      const stemLength=lineGap*3;
       const stemX=stemUp?x+7.2:x-7.2;
-      const stemEnd=stemUp?y-30:y+30;
-      g.appendChild(svgEl("line",{x1:stemX,y1:y,x2:stemX,y2:stemEnd,stroke:stroke,"stroke-width":"1.6","pointer-events":"none"}));
+      const stemEnd=stemUp?y-stemLength:y+stemLength;
+      g.appendChild(svgEl("line",{
+        x1:stemX,y1:y,x2:stemX,y2:stemEnd,
+        stroke:stroke,"stroke-width":"1.6","pointer-events":"none"
+      }));
     }
     g.appendChild(svgEl("rect",{x:x-28,y:y-20,width:52,height:40,fill:"transparent"}));
     score.appendChild(g);

@@ -1,4 +1,4 @@
-const CACHE_NAME = "harmony-trainer-v1-22";
+const CACHE_NAME = "harmony-trainer-v1-24";
 const APP_SHELL = [
   "./manifest.webmanifest",
   "./app-icon.svg"
