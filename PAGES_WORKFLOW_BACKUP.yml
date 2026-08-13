@@ -1,4 +1,4 @@
-# バックアップです。GitHubで使う本体は .github/workflows/pages.yml です。
+# GitHubで使う本体は .github/workflows/pages.yml です。
 
 name: Deploy GitHub Pages
 
@@ -38,4 +38,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4

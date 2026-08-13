@@ -1,7 +1,5 @@
-const CACHE_NAME = "harmony-trainer-v1-17";
+const CACHE_NAME = "harmony-trainer-v1-19";
 const APP_SHELL = [
-  "./",
-  "./index.html",
   "./manifest.webmanifest",
   "./app-icon.svg"
 ];
@@ -24,14 +22,26 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+
+  if (event.request.mode === "navigate" ||
+      new URL(event.request.url).pathname.endsWith("/index.html")) {
+    event.respondWith(
+      fetch(event.request, {cache:"no-store"})
+        .then(response => {
+          const copy=response.clone();
+          caches.open(CACHE_NAME).then(cache=>cache.put("./index.html",copy)).catch(()=>{});
+          return response;
+        })
+        .catch(()=>caches.match("./index.html"))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(() => {});
-        return response;
-      }).catch(() => caches.match("./index.html"));
-    })
+    caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+      const copy=response.clone();
+      caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy)).catch(()=>{});
+      return response;
+    }))
   );
 });

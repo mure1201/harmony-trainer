@@ -1,0 +1,3 @@
+GitHubで使う本体は .gitignore です。
+.DS_Store
+Thumbs.db
